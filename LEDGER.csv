@@ -1,0 +1,2 @@
+date,coordinator,lane,staged,edited,submitted,tracking_id,minutes_stage,minutes_gate,refuse,notes
+# Example (delete this row): 2026-09-22,A1,availity,Y,Y,Y,AVA-000000,3,2,N,

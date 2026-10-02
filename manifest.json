@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "DeskGate Operator Extension (v2.6.8)",
+  "version": "2.6.8",
+  "version_name": "2.6.8-client-runtime",
+  "update_url": "https://deskgate.app/ext/updates.xml",
+  "description": "Sovereign client-side workstation runtime for prior authorization, attachment collation, and quoted denial appeal staging. Human Submit. GATE hashes the tracking ID.",
+  "permissions": [
+    "activeTab",
+    "contextMenus",
+    "scripting",
+    "sidePanel",
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "action": {
+    "default_title": "DeskGate v2.6.8",
+    "default_icon": "app-icon.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "all_frames": true,
+      "match_about_blank": true,
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "app-icon.png",
+    "32": "app-icon.png",
+    "48": "app-icon.png",
+    "128": "app-icon.png"
+  }
+}

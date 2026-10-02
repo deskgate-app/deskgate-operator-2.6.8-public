@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HealthPayer Essentials · Prior Authorization Management Gateway</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --header-bg: #0b2240;
+      --nav-bg: #14355d;
+      --bg: #f0f4f8;
+      --card: #ffffff;
+      --border: #cbd5e1;
+      --border-subtle: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --primary: #0066cc;
+      --primary-hover: #0052a3;
+      --success: #15803d;
+      --success-bg: #dcfce7;
+      --warning: #b45309;
+      --danger: #b91c1c;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* Payer Portal Header */
+    .portal-hdr {
+      background: var(--header-bg);
+      color: #ffffff;
+      padding: 10px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 3px solid #00a3e0;
+    }
+    .portal-brand { display: flex; align-items: center; gap: 12px; }
+    .portal-logo-symbol {
+      width: 28px; height: 28px; background: #00a3e0; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center; font-weight: 900; color: #fff;
+    }
+    .portal-brand-text { font-size: 15px; font-weight: 800; letter-spacing: -0.2px; }
+    .portal-user-tray { display: flex; gap: 20px; font-size: 11.5px; color: #cbd5e1; }
+    .portal-user-tray strong { color: #fff; }
+
+    /* Nav Links */
+    .portal-subnav {
+      background: var(--nav-bg);
+      padding: 0 24px;
+      display: flex;
+      gap: 22px;
+      font-size: 12.5px;
+      color: #cbd5e1;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .subnav-link {
+      padding: 10px 0; cursor: pointer; text-decoration: none; color: #cbd5e1; border-bottom: 3px solid transparent;
+    }
+    .subnav-link:hover { color: #fff; }
+    .subnav-link.active { color: #fff; border-bottom-color: #00a3e0; font-weight: 700; }
+
+    /* Interactive Live Stepper Bar */
+    .stepper-bar {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .step-node {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+    .step-node:hover { background: #f1f5f9; }
+    .step-node.completed { color: var(--success); }
+    .step-node.active { color: var(--primary); font-weight: 700; background: #eff6ff; }
+    .step-num {
+      width: 22px; height: 22px; border-radius: 50%; background: #e2e8f0; color: #475569;
+      display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800;
+    }
+    .step-node.active .step-num { background: var(--primary); color: #fff; }
+    .step-node.completed .step-num { background: var(--success); color: #fff; }
+
+    /* Main Container */
+    .container {
+      max-width: 1120px;
+      margin: 20px auto 60px;
+      padding: 0 20px;
+    }
+
+    .form-box {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+    .form-box-hdr {
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .form-box-hdr h2 { font-size: 14px; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 0.4px; }
+
+    .form-body { padding: 22px 24px; }
+
+    .section-legend {
+      font-size: 12.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #0066cc;
+      margin: 22px 0 12px;
+      padding-bottom: 4px;
+      border-bottom: 1.5px solid #e0f2fe;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .section-legend:first-of-type { margin-top: 0; }
+    .section-status { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: none; }
+    .section-status.done { color: var(--success); }
+
+    .row-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px 20px;
+      margin-bottom: 14px;
+    }
+    @media (max-width: 768px) {
+      .row-grid { grid-template-columns: 1fr; }
+    }
+
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field.full { grid-column: 1 / -1; }
+    .field label {
+      font-size: 11.5px; font-weight: 700; color: #334155; text-transform: uppercase; letter-spacing: 0.3px;
+    }
+    .field label span.req { color: var(--danger); font-size: 13px; }
+    .field input, .field select, .field textarea {
+      border: 1px solid #94a3b8;
+      border-radius: 5px;
+      padding: 9px 12px;
+      font-size: 13px;
+      font-family: inherit;
+      color: #0f172a;
+      background: #ffffff;
+      transition: all 0.2s ease;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      outline: none; border-color: #0066cc; box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15);
+    }
+    .field input.staged, .field textarea.staged, .field select.staged {
+      background-color: #f0fdf4 !important;
+      border-color: #16a34a !important;
+      box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.2) !important;
+    }
+    .helper-text { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    /* Action bar */
+    .form-actions {
+      background: #f8fafc;
+      border-top: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      padding: 10px 18px; font-size: 13px; font-weight: 700; border-radius: 6px; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 8px; border: 1px solid transparent; transition: all 0.15s ease;
+    }
+    .btn-primary { background: var(--primary); color: #ffffff; border-color: #0052a3; }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+    .btn-secondary { background: #ffffff; color: #334155; border-color: var(--border); }
+    .btn-secondary:hover { background: #f1f5f9; }
+    .btn-danger-submit {
+      background: #b91c1c; color: #ffffff; border-color: #991b1b; box-shadow: 0 2px 4px rgba(185, 28, 28, 0.2);
+    }
+    .btn-danger-submit:hover:not(:disabled) { background: #991b1b; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px);
+      z-index: 1000; display: none; align-items: center; justify-content: center; padding: 16px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: #ffffff; width: 100%; max-width: 620px; border-radius: 10px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3); border: 1px solid var(--border); overflow: hidden;
+    }
+    .modal-hdr {
+      background: #0f172a; color: #fff; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center;
+    }
+    .modal-body { padding: 20px; font-size: 13px; line-height: 1.55; }
+    .modal-summary-box {
+      background: #f8fafc; border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px;
+      margin: 14px 0; font-size: 12px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+    }
+    .modal-attestation {
+      background: #fef2f2; border: 1px solid #fecaca; border-left: 3px solid #dc2626;
+      padding: 10px 12px; border-radius: 4px; font-size: 11.5px; color: #991b1b; margin-bottom: 16px;
+    }
+    .modal-footer {
+      background: #f8fafc; border-top: 1px solid var(--border); padding: 14px 20px; display: flex; justify-content: flex-end; gap: 10px;
+    }
+    .success-receipt {
+      display: none; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 18px; margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header class="portal-hdr">
+    <div class="portal-brand">
+      <div class="portal-logo-symbol">H</div>
+      <span class="portal-brand-text">HealthPayer Essentials Provider Portal</span>
+    </div>
+    <div class="portal-user-tray">
+      <span>Organization: <strong>Nashville Ortho &amp; Rehabilitation MSO</strong> (TIN: 74-2918401)</span>
+      <span>User: <strong>Torres, M. (Clinical Coordinator)</strong></span>
+      <span>Status: <strong style="color: #4ade80;">Active Gateway Session</strong></span>
+    </div>
+  </header>
+
+  <!-- Portal Navigation -->
+  <nav class="portal-subnav">
+    <a href="#" class="subnav-link">Home</a>
+    <a href="#" class="subnav-link">Eligibility &amp; Benefits (270/271)</a>
+    <a href="#" class="subnav-link active">Prior Authorization &amp; Referrals</a>
+    <a href="#" class="subnav-link">Claims Management</a>
+    <a href="#" class="subnav-link">Remittance Advice</a>
+  </nav>
+
+  <!-- Dynamic Live Stepper Bar -->
+  <div class="stepper-bar" id="stepperBar">
+    <div class="step-node active" id="step1_node" onclick="scrollToSection('sec1')">
+      <div class="step-num" id="step1_num">1</div>
+      <span>1. Payer &amp; Provider</span>
+    </div>
+    <div class="step-node" id="step2_node" onclick="scrollToSection('sec2')">
+      <div class="step-num" id="step2_num">2</div>
+      <span>2. Patient / Member</span>
+    </div>
+    <div class="step-node" id="step3_node" onclick="scrollToSection('sec3')">
+      <div class="step-num" id="step3_num">3</div>
+      <span>3. Clinical &amp; CPT Codes</span>
+    </div>
+    <div class="step-node" id="step4_node" onclick="scrollToSection('sec4')">
+      <div class="step-num" id="step4_num">4</div>
+      <span>4. Attachments</span>
+    </div>
+    <div class="step-node" id="step5_node" onclick="scrollToSection('sec5')">
+      <div class="step-num" id="step5_num">5</div>
+      <span>5. Review &amp; Submit</span>
+    </div>
+  </div>
+
+  <main class="container">
+
+    <!-- Success Receipt -->
+    <div class="success-receipt" id="successReceipt">
+      <div style="color: #15803d; font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span>Prior Authorization Request Successfully Submitted to Payer</span>
+      </div>
+      <p style="color: #166534; font-size: 12.5px;">
+        Transaction transmitted to Blue Cross Blue Shield of TN Gateway. Reference captured and stored in volatile memory.
+      </p>
+      <p style="margin-top:10px;font-size:12px;">
+        Adverse determination simulation: <a href="showcase-denial.html">Open adverse determination letter</a>
+        then <a href="showcase-appeal.html">stage reconsideration form</a>.
+      </p>
+      <div style="background: #ffffff; border: 1px solid #bbf7d0; padding: 12px 14px; border-radius: 6px; margin-top: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-size: 12px;">
+        <div>Tracking / Auth Reference: <strong class="mono" style="color: #0066cc;" id="receipt_tid">—</strong></div>
+        <div>Payer Status: <strong style="color: #15803d;">Pended · Clinical Review</strong></div>
+        <div>Decision Window: <strong>24–48 Business Hours</strong></div>
+      </div>
+    </div>
+
+    <!-- The Primary Form Container -->
+    <div class="form-box">
+      <div class="form-box-hdr">
+        <h2>New Prior Authorization Request · Commercial Outpatient Standard</h2>
+        <span class="mono" style="font-size: 11px; color: var(--text-muted);">Standard Request (Non-Urgent)</span>
+      </div>
+
+      <form id="paForm" onsubmit="return false;" class="form-body">
+        
+        <!-- STEP 1: Payer & Provider -->
+        <div class="section-legend" id="sec1">
+          <span>1. Payer &amp; Rendering Provider Identification</span>
+          <span class="section-status" id="sec1_status">Incomplete</span>
+        </div>
+        <div class="row-grid">
+          <div class="field">
+            <label for="f_payer">Target Payer / Health Plan <span class="req">*</span></label>
+            <input id="f_payer" name="payer" data-deskgate-target="payer" placeholder="e.g. Blue Cross Blue Shield of TN">
+          </div>
+          <div class="field">
+            <label for="f_npi">Rendering / Attending Provider NPI <span class="req">*</span></label>
+            <input id="f_npi" name="npi" data-deskgate-target="npi" class="mono" placeholder="10-digit NPI">
+            <div class="helper-text">Marcus Vance, MD (NPI: 1999999999)</div>
+          </div>
+        </div>
+
+        <!-- STEP 2: Patient / Member -->
+        <div class="section-legend" id="sec2">
+          <span>2. Patient Demographics &amp; Subscriber Information</span>
+          <span class="section-status" id="sec2_status">Incomplete</span>
+        </div>
+        <div class="row-grid">
+          <div class="field">
+            <label for="f_name">Patient Full Name (Last, First M.) <span class="req">*</span></label>
+            <input id="f_name" name="patient_name" data-deskgate-target="patient_name" placeholder="e.g. Vargas, Elena M.">
+          </div>
+          <div class="field">
+            <label for="f_dob">Date of Birth <span class="req">*</span></label>
+            <input id="f_dob" name="dob" data-deskgate-target="dob" placeholder="MM/DD/YYYY">
+          </div>
+        </div>
+
+        <div class="row-grid">
+          <div class="field">
+            <label for="f_member">Member / Subscriber ID <span class="req">*</span></label>
+            <input id="f_member" name="member_id" data-deskgate-target="member_id" class="mono" placeholder="e.g. SYN-884291-Q">
+          </div>
+          <div class="field">
+            <label for="f_group">Group Number</label>
+            <input id="f_group" name="group_number" data-deskgate-target="group_number" class="mono" placeholder="e.g. GRP-DEMO-014">
+          </div>
+        </div>
+
+        <div class="row-grid">
+          <div class="field full">
+            <label for="f_addr">Subscriber Home Address</label>
+            <input id="f_addr" name="home_address" data-deskgate-target="home_address" placeholder="Street Address, Apt/Suite, City, State, ZIP">
+          </div>
+        </div>
+
+        <!-- STEP 3: Clinical Details & Codes -->
+        <div class="section-legend" id="sec3">
+          <span>3. Clinical Services, Diagnoses &amp; Codes</span>
+          <span class="section-status" id="sec3_status">Incomplete</span>
+        </div>
+        <div class="row-grid">
+          <div class="field">
+            <label for="f_icd">Primary &amp; Secondary ICD-10 Codes <span class="req">*</span></label>
+            <input id="f_icd" name="diagnosis" data-deskgate-target="diagnosis" class="mono" placeholder="e.g. M17.11, G89.4">
+          </div>
+          <div class="field">
+            <label for="f_cpt">Requested CPT / HCPCS Codes &amp; Units <span class="req">*</span></label>
+            <input id="f_cpt" name="procedure_code" data-deskgate-target="procedure_code" class="mono" placeholder="e.g. 97110 x12, 97530 x8">
+          </div>
+        </div>
+
+        <div class="row-grid">
+          <div class="field full">
+            <label for="f_necessity">Medical Necessity Statement &amp; Step-Therapy Rationale</label>
+            <textarea id="f_necessity" name="medical_necessity" data-deskgate-target="medical_necessity" rows="3" placeholder="Enter clinical rationale, conservative treatment failures, and therapy duration..."></textarea>
+          </div>
+        </div>
+
+        <!-- STEP 4: Attachments -->
+        <div class="section-legend" id="sec4">
+          <span>4. Supporting Clinical Documentation &amp; Packets</span>
+          <span class="section-status" id="sec4_status">Incomplete</span>
+        </div>
+        <div class="row-grid">
+          <div class="field full">
+            <label for="f_att">Attached Document Packets (PDF, Max 15MB each)</label>
+            <textarea id="f_att" name="attachments" data-deskgate-target="attachments" rows="2" class="mono" placeholder="e.g. SYN_order_97110_signed.pdf, SYN_progress_note_0918.pdf, SYN_bcbs_card_front_back.png"></textarea>
+          </div>
+        </div>
+
+        <div id="sec5"></div>
+      </form>
+
+      <!-- Bottom Submission Bar -->
+      <div class="form-actions">
+        <div style="font-size: 12px; color: var(--text-muted);">
+          <span>Logged-in Coordinator: <strong>M. Torres</strong></span>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button type="button" class="btn btn-secondary" id="btnClearForm">Clear Fields</button>
+          <button type="button" class="btn btn-danger-submit" id="btnOpenSubmitGate" disabled>Submit Authorization Request</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- HUMAN GATE MODAL -->
+  <div class="modal-overlay" id="gateModal">
+    <div class="modal-box">
+      <div class="modal-hdr">
+        <h3>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Operator Submission Gate · Attestation &amp; Final Review
+        </h3>
+        <span class="mono" style="font-size: 11px; color: #94a3b8;">GATE ID: GT-90218</span>
+      </div>
+      <div class="modal-body">
+        <p>You are preparing to transmit a formal prior-authorization filing to <strong>Blue Cross Blue Shield</strong>. Please verify the staged values:</p>
+
+        <div class="modal-summary-box">
+          <div>Patient: <strong id="m_patient">—</strong></div>
+          <div>DOB: <strong id="m_dob">—</strong></div>
+          <div>Member ID: <strong class="mono" id="m_member">—</strong></div>
+          <div>Ordering NPI: <strong class="mono" id="m_npi">—</strong></div>
+          <div>Diagnoses: <strong class="mono" id="m_icd">—</strong></div>
+          <div>Requested CPT: <strong class="mono" id="m_cpt">—</strong></div>
+        </div>
+
+        <div class="modal-attestation">
+          <strong>Mandatory Human Confirmation (DeskGate Non-Negotiable Gate):</strong><br>
+          Autonomous machine submissions are prohibited. The licensed clinical coordinator remains the filing actor of record.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btnCancelGate">Hold / Return to Form</button>
+        <button type="button" class="btn btn-primary" id="btnConfirmSubmit">I Have Verified — Submit to Payer</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+
+    function scrollToSection(id) {
+      const el = $(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Dynamic Live Stepper Update
+    function updateStepperProgress() {
+      const sec1_done = $('f_payer').value.trim() && $('f_npi').value.trim();
+      const sec2_done = $('f_name').value.trim() && $('f_dob').value.trim() && $('f_member').value.trim();
+      const sec3_done = $('f_icd').value.trim() && $('f_cpt').value.trim();
+      const sec4_done = $('f_att').value.trim();
+
+      updateNode('step1', sec1_done, 'sec1_status');
+      updateNode('step2', sec2_done, 'sec2_status');
+      updateNode('step3', sec3_done, 'sec3_status');
+      updateNode('step4', sec4_done, 'sec4_status');
+
+      const allReady = sec1_done && sec2_done && sec3_done;
+      $('btnOpenSubmitGate').disabled = !allReady;
+
+      const s5 = $('step5_node');
+      if (allReady) {
+        s5.className = 'step-node active';
+        $('step5_num').textContent = '5';
+      } else {
+        s5.className = 'step-node';
+        $('step5_num').textContent = '5';
+      }
+    }
+
+    function updateNode(prefix, isDone, statusId) {
+      const node = $(prefix + '_node');
+      const num = $(prefix + '_num');
+      const st = $(statusId);
+      if (isDone) {
+        node.className = 'step-node completed';
+        num.textContent = '✓';
+        if (st) { st.textContent = 'Complete'; st.className = 'section-status done'; }
+      } else {
+        node.className = 'step-node';
+        num.textContent = prefix.replace('step', '');
+        if (st) { st.textContent = 'Incomplete'; st.className = 'section-status'; }
+      }
+    }
+
+    document.querySelectorAll('#paForm input, #paForm textarea').forEach(el => {
+      el.addEventListener('input', updateStepperProgress);
+    });
+
+    $('btnClearForm').onclick = () => {
+      document.querySelectorAll('#paForm input, #paForm textarea').forEach(el => {
+        el.value = '';
+        el.classList.remove('staged');
+      });
+      updateStepperProgress();
+      $('successReceipt').style.display = 'none';
+    };
+
+    $('btnOpenSubmitGate').onclick = () => {
+      $('m_patient').textContent = $('f_name').value || '—';
+      $('m_dob').textContent = $('f_dob').value || '—';
+      $('m_member').textContent = $('f_member').value || '—';
+      $('m_npi').textContent = $('f_npi').value || '—';
+      $('m_icd').textContent = $('f_icd').value || '—';
+      $('m_cpt').textContent = $('f_cpt').value || '—';
+      $('gateModal').classList.add('open');
+    };
+
+    $('btnCancelGate').onclick = () => $('gateModal').classList.remove('open');
+
+    $('btnConfirmSubmit').onclick = () => {
+      $('gateModal').classList.remove('open');
+      const randomTid = 'BCBS-TN-PA-' + Math.floor(10000000 + Math.random() * 90000000);
+      $('receipt_tid').textContent = randomTid;
+      $('successReceipt').style.display = 'block';
+      $('btnOpenSubmitGate').disabled = true;
+      $('step5_node').className = 'step-node completed';
+      $('step5_num').textContent = '✓';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // Cross-tab staging listener
+    window.addEventListener('message', event => {
+      const data = event.data;
+      if (!data) return;
+
+      if (data.type === 'deskgate-parent-action' || data.type === 'deskgate-extension-command') {
+        const payload = data.payload || {};
+        const fieldMap = {
+          f_payer: payload.payer,
+          f_npi: payload.npi,
+          f_name: payload.patient_name || payload.patient || payload.name,
+          f_dob: payload.dob,
+          f_member: payload.member_id || payload.member,
+          f_group: payload.group_number || payload.group,
+          f_addr: payload.home_address || payload.address,
+          f_icd: payload.diagnosis || payload.icd,
+          f_cpt: payload.procedure_code || payload.cpt,
+          f_necessity: payload.medical_necessity || payload.necessity,
+          f_att: payload.attachments
+        };
+
+        Object.keys(fieldMap).forEach(id => {
+          if (fieldMap[id] && $(id)) {
+            $(id).value = fieldMap[id];
+            $(id).classList.add('staged');
+          }
+        });
+        updateStepperProgress();
+      }
+    });
+
+    updateStepperProgress();
+  </script>
+</body>
+</html>

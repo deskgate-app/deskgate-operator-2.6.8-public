@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ApexHealth EHR · Chart Review · Vargas, Elena M. (MRN 849-201-92)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --surface-subtle: #f8fafc;
+      --border: #cbd5e1;
+      --border-subtle: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --brand: #0284c7;
+      --brand-dark: #0369a1;
+      --brand-light: #e0f2fe;
+      --success: #15803d;
+      --success-bg: #dcfce7;
+      --amber: #b45309;
+      --amber-bg: #fef3c7;
+      --danger: #b91c1c;
+      --danger-bg: #fee2e2;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* Top EHR App Bar */
+    .ehr-topbar {
+      background: #0f172a;
+      color: #fff;
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--brand);
+    }
+    .ehr-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: -0.2px;
+    }
+    .ehr-badge {
+      background: var(--brand);
+      color: #fff;
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .ehr-session-info {
+      display: flex;
+      gap: 16px;
+      color: #94a3b8;
+      font-size: 12px;
+    }
+    .ehr-session-info strong { color: #f8fafc; }
+
+    /* Patient Demographic Banner */
+    .patient-banner {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      padding: 12px 18px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 20px;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .patient-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: #475569;
+      font-size: 14px;
+      border: 1px solid var(--border);
+    }
+    .patient-core h1 {
+      font-size: 17px;
+      font-weight: 800;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .patient-meta-grid {
+      display: flex;
+      gap: 18px;
+      margin-top: 4px;
+      color: var(--text-muted);
+      font-size: 12px;
+      flex-wrap: wrap;
+    }
+    .patient-meta-grid span strong { color: #1e293b; font-weight: 600; }
+    .patient-indicators {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .pill {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .pill-green { background: var(--success-bg); color: var(--success); border: 1px solid #bbf7d0; }
+    .pill-red { background: var(--danger-bg); color: var(--danger); border: 1px solid #fecaca; }
+    .pill-blue { background: var(--brand-light); color: var(--brand-dark); border: 1px solid #bae6fd; }
+
+    /* Layout */
+    .workspace {
+      display: grid;
+      grid-template-columns: 240px 1fr 340px;
+      gap: 12px;
+      max-width: 1600px;
+      margin: 12px auto;
+      padding: 0 16px 40px;
+    }
+    @media (max-width: 1280px) {
+      .workspace { grid-template-columns: 220px 1fr; }
+      .col-sidebar-right { grid-column: 1 / -1; }
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .card-hdr {
+      background: var(--surface-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #334155;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-body { padding: 14px; }
+
+    /* Nav Sidebar */
+    .nav-list { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+    .nav-item {
+      padding: 9px 12px;
+      border-radius: 6px;
+      color: #334155;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .nav-item:hover { background: #f1f5f9; color: #0284c7; }
+    .nav-item.active { background: #e0f2fe; color: #0369a1; font-weight: 700; }
+    .nav-count {
+      background: #cbd5e1;
+      color: #1e293b;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 10px;
+    }
+    .nav-item.active .nav-count { background: #0284c7; color: #fff; }
+
+    /* Clinical Note Content */
+    .note-sheet {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 18px 20px;
+      font-size: 12.5px;
+      line-height: 1.6;
+      color: #1e293b;
+    }
+    .note-header-block {
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      font-size: 12px;
+    }
+    .note-section-title {
+      font-size: 11.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: #0369a1;
+      margin: 14px 0 6px;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 3px;
+    }
+    .kv-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 6px;
+    }
+    .kv-table td {
+      padding: 6px 4px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: top;
+    }
+    .kv-table td:first-child {
+      color: #64748b;
+      font-weight: 600;
+      width: 130px;
+    }
+
+    /* Orders Table */
+    .order-row {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-left: 3px solid var(--brand);
+      border-radius: 4px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+    .order-title {
+      font-weight: 700;
+      color: #0f172a;
+      display: flex;
+      justify-content: space-between;
+    }
+    .order-desc { color: #475569; font-size: 12px; margin-top: 3px; }
+
+    /* Attachments list */
+    .attachment-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      margin-bottom: 6px;
+      text-decoration: none;
+      color: inherit;
+    }
+    .doc-icon {
+      width: 28px;
+      height: 32px;
+      background: #fee2e2;
+      border: 1px solid #fecaca;
+      color: #b91c1c;
+      font-weight: 800;
+      font-size: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+    .doc-info { overflow: hidden; }
+    .doc-name { font-weight: 600; font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .doc-meta { font-size: 10.5px; color: #64748b; }
+
+    .callout-evidence {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-left: 3px solid #0284c7;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #1e3a8a;
+      margin-top: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top EHR Nav Bar -->
+  <header class="ehr-topbar">
+    <div class="ehr-brand">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      <span>ApexCare Cloud EHR</span>
+      <span class="ehr-badge">Outpatient Specialist · Rel. 2026.4</span>
+    </div>
+    <div class="ehr-session-info">
+      <span>Facility: <strong>Nashville Orthopedic & Sports Medicine</strong></span>
+      <span>Provider: <strong>Marcus Vance, MD (NPI 1999999999)</strong></span>
+      <span>Terminal: <strong>STN-CLINIC-04</strong></span>
+    </div>
+  </header>
+
+  <!-- Patient Demographic & Coverage Banner -->
+  <section class="patient-banner">
+    <div class="patient-avatar">EV</div>
+    <div class="patient-core">
+      <h1>
+        <span id="patient_name">Vargas, Elena M.</span>
+        <span class="pill pill-green">Active Chart</span>
+      </h1>
+      <div class="patient-meta-grid">
+        <span>DOB: <strong id="patient_dob">04/12/1979</strong> (47y F)</span>
+        <span>MRN: <strong class="mono" id="patient_mrn">MRN-884291-01</strong></span>
+        <span>Phone: <strong>(615) 555-0194</strong></span>
+        <span>Address: <strong id="patient_address">418 Willow Creek Rd, Apt 2B, Nashville, TN 37209</strong></span>
+      </div>
+    </div>
+    <div class="patient-indicators">
+      <div style="text-align: right; margin-right: 12px;">
+        <div style="font-size: 10.5px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Primary Payer</div>
+        <div style="font-weight: 700; color: #0284c7;" id="patient_payer">Blue Cross Blue Shield of TN</div>
+        <div class="mono" style="font-size: 11px; color: #334155;">ID: <strong id="patient_member_id">SYN-884291-Q</strong> | Grp: <strong id="patient_group_id">GRP-DEMO-014</strong></div>
+      </div>
+      <span class="pill pill-blue">Commercial PPO</span>
+      <span class="pill pill-green">270/271 Verified</span>
+    </div>
+  </section>
+
+  <!-- Main Workstation Layout -->
+  <main class="workspace">
+    
+    <!-- Left Navigation -->
+    <aside>
+      <div class="card">
+        <div class="card-hdr">Chart Sections</div>
+        <div class="card-body" style="padding: 6px;">
+          <ul class="nav-list">
+            <li class="nav-item">Encounter Summary</li>
+            <li class="nav-item active">Progress Notes <span class="nav-count">1</span></li>
+            <li class="nav-item">Diagnoses & Problems <span class="nav-count">4</span></li>
+            <li class="nav-item">Orders & Prescriptions <span class="nav-count">2</span></li>
+            <li class="nav-item">Prior Auth Queue <span class="nav-count">Pending</span></li>
+            <li class="nav-item">Scanned Documents <span class="nav-count">3</span></li>
+            <li class="nav-item">Insurance & Coverage</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 12px;">
+        <div class="card-hdr">Encounter Context</div>
+        <div class="card-body" style="font-size: 11.5px; line-height: 1.5;">
+          <div><strong>Date:</strong> 18-Sep-2026 09:30 AM</div>
+          <div><strong>Type:</strong> Established Follow-up</div>
+          <div><strong>Department:</strong> Physical Medicine</div>
+          <div><strong>Supervising:</strong> Marcus Vance, MD</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Center Column: Progress Note -->
+    <section>
+      <div class="card">
+        <div class="card-hdr">
+          <span>Outpatient Progress Note · Physical Medicine & Rehabilitation</span>
+          <span class="mono" style="font-weight: 500; font-size: 11px; color: var(--text-muted);">Signed & Locked 18-Sep-2026</span>
+        </div>
+        <div class="card-body">
+          <div class="note-sheet">
+            <div class="note-header-block">
+              <div>
+                <div><strong>Patient:</strong> Vargas, Elena M.</div>
+                <div><strong>DOB:</strong> 12-Apr-1979 (Age 47)</div>
+              </div>
+              <div style="text-align: right;">
+                <div><strong>Encounter ID:</strong> ENC-20260918-0914</div>
+                <div><strong>Provider:</strong> Marcus Vance, MD (NPI 1999999999)</div>
+              </div>
+            </div>
+
+            <div class="note-section-title">Subjective / Chief Complaint</div>
+            <p>
+              Patient returns for evaluation of persistent right knee pain and gait instability following bilateral meniscus wear. Reports symptoms worsen with stair descent (pain visual analog scale 4/10 to 7/10). Patient has completed 6 weeks of independent home exercise therapy without sufficient functional restoration.
+            </p>
+
+            <div class="note-section-title">Conservative Therapy History & Step Failures</div>
+            <table class="kv-table">
+              <tr>
+                <td>Trial 1: Oral NSAID</td>
+                <td>Meloxicam 15 mg daily x 8 weeks. Discontinued due to secondary gastric distress and refractory morning stiffness.</td>
+              </tr>
+              <tr>
+                <td>Trial 2: Home Exercise</td>
+                <td>Documented home physical therapy exercises 3x weekly x 6 weeks. Failed to improve quadriceps recruitment index.</td>
+              </tr>
+              <tr>
+                <td>Trial 3: Injection</td>
+                <td>Right knee intra-articular corticosteroid injection administered 14-May-2026. Provided transient 4-week relief before symptom return.</td>
+              </tr>
+            </table>
+
+            <div class="note-section-title">Assessment & Clinical Diagnoses (ICD-10)</div>
+            <ul style="margin-left: 20px; font-weight: 600;">
+              <li><span class="mono" style="color:#0369a1;">M17.11</span> — Primary osteoarthritis, right knee</li>
+              <li><span class="mono" style="color:#0369a1;">G89.4</span> — Chronic refractory pain syndrome associated with degenerative arthropathy</li>
+            </ul>
+
+            <div class="note-section-title">Plan & Orders for Skilled Rehabilitation</div>
+            <p>
+              Continued skilled outpatient physical therapy indicated to restore gait mechanics and stabilize knee extension. Prescribed formal physical therapy 2x weekly for 6 weeks (total 12 sessions).
+            </p>
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px 12px; border-radius: 6px; margin: 10px 0;">
+              <div><strong>CPT 97110</strong> (Therapeutic exercise, 1+ areas, each 15 min) — <strong>12 units</strong></div>
+              <div><strong>CPT 97530</strong> (Therapeutic activities, dynamic movement) — <strong>8 units</strong></div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Frequency: 2 sessions/week x 6 weeks · Rendering NPI: 1999999999</div>
+            </div>
+
+            <div class="callout-evidence">
+              <strong>Clinical Rationale for Payer Prior Auth:</strong> Documented failures of conservative management (failed 8-week oral NSAID trial due to adverse GI effect + transient response to steroid injection). Continued skilled intervention required to prevent surgical arthroplasty candidate escalation.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right Sidebar: Orders & Document Attachments -->
+    <aside class="col-sidebar-right">
+      <div class="card">
+        <div class="card-hdr">Active Outpatient Orders</div>
+        <div class="card-body">
+          <div class="order-row">
+            <div class="order-title">
+              <span>PT: Physical Therapy (Outpatient)</span>
+              <span class="pill pill-blue">Ordered</span>
+            </div>
+            <div class="order-desc">
+              <strong>97110 x12</strong> & <strong>97530 x8</strong><br>
+              Diag: M17.11, G89.4<br>
+              Ref Provider: Marcus Vance, MD
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 12px;">
+        <div class="card-hdr">
+          <span>Ready Document Attachments</span>
+          <span class="pill pill-green">3 Files</span>
+        </div>
+        <div class="card-body">
+          <div class="attachment-card">
+            <div class="doc-icon">PDF</div>
+            <div class="doc-info">
+              <div class="doc-name">SYN_order_97110_signed.pdf</div>
+              <div class="doc-meta">Signed MD Order · 2 Pages · 184 KB</div>
+            </div>
+          </div>
+          <div class="attachment-card">
+            <div class="doc-icon">PDF</div>
+            <div class="doc-info">
+              <div class="doc-name">SYN_progress_note_0918.pdf</div>
+              <div class="doc-meta">Clinical Note & Trial History · 3 Pages · 312 KB</div>
+            </div>
+          </div>
+          <div class="attachment-card">
+            <div class="doc-icon" style="background:#e0f2fe; border-color:#bae6fd; color:#0369a1;">PNG</div>
+            <div class="doc-info">
+              <div class="doc-name">SYN_bcbs_card_front_back.png</div>
+              <div class="doc-meta">Member ID Card Scan · 1 Page · 740 KB</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 12px;">
+        <div class="card-hdr">Coverage Cross-Reference</div>
+        <div class="card-body" style="font-size: 11.5px; line-height: 1.5; color: #475569;">
+          <div><strong>Payer:</strong> Blue Cross Blue Shield PPO</div>
+          <div><strong>Pre-cert Phone:</strong> (800) 555-9201</div>
+          <div><strong>EDI Gateway:</strong> Availity Essentials / Portal</div>
+          <div><strong>Auth Rule:</strong> Required for >8 outpatient PT units per plan year.</div>
+        </div>
+      </div>
+    </aside>
+
+  </main>
+
+</body>
+</html>

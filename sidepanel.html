@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DeskGate Operator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #090d16; --panel: #0f172a; --cyan: #00e5ff; --neon: #00ff41;
+            --amber: #f59e0b; --border: rgba(255,255,255,.12); --text: #f8fafc; --mut: #94a3b8;
+            --danger: #ef4444; --purple: #c084fc;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg); color: var(--text);
+            font-family: Inter, system-ui, sans-serif;
+            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+        }
+        .mono { font-family: 'Share Tech Mono', monospace; }
+        header {
+            padding: 10px 14px; background: var(--panel); border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center; gap: 8px;
+        }
+        .chips { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+        .chip {
+            font-size: 0.58rem; letter-spacing: .3px; color: var(--mut);
+            border: 1px solid var(--border); border-radius: 999px; padding: 3px 8px;
+            max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .pin { padding: 12px; background: #0c1222; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
+        .script { font-size: 0.66rem; color: var(--mut); line-height: 1.45; }
+        .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .btn {
+            min-height: 44px; border-radius: 7px; cursor: pointer; font-weight: 800;
+            font-size: 0.74rem; letter-spacing: .3px; display: flex; align-items: center;
+            justify-content: center; gap: 6px; border: 1.5px solid transparent;
+            font-family: 'Share Tech Mono', monospace; background: transparent; color: var(--text);
+            transition: all 0.2s ease;
+        }
+        .btn-cyan { color: var(--cyan); border-color: var(--cyan); background: rgba(0,229,255,.12); }
+        .btn-cyan:hover:not(:disabled) { background: rgba(0,229,255,.24); }
+        .btn-amber { color: #fbbf24; border-color: var(--amber); background: rgba(245,158,11,.12); }
+        .btn-amber:hover:not(:disabled) { background: rgba(245,158,11,.24); }
+        .btn-purple { color: var(--purple); border-color: var(--purple); background: rgba(192,132,252,.12); }
+        .btn-purple:hover:not(:disabled) { background: rgba(192,132,252,.22); }
+        .btn-green { color: var(--neon); border-color: var(--neon); background: rgba(0,255,65,.1); font-size: 0.72rem; min-height: 36px; }
+        .btn-green:hover:not(:disabled) { background: rgba(0,255,65,.2); }
+        .btn-dim { color: var(--mut); border-color: var(--border); font-size: 0.68rem; min-height: 28px; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .live-pipeline-bar {
+            display: none; background: rgba(0, 229, 255, 0.08); border: 1px solid rgba(0, 229, 255, 0.3);
+            border-radius: 6px; padding: 7px 10px; font-size: 0.68rem; color: var(--cyan);
+            align-items: center; gap: 8px;
+        }
+        .live-pipeline-bar.active { display: flex; }
+        .spin {
+            width: 11px; height: 11px; border: 2px solid rgba(0, 229, 255, 0.2);
+            border-top-color: var(--cyan); border-radius: 50%;
+            animation: spin 0.7s linear infinite; display: inline-block;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #transcript { flex: 1; overflow-y: auto; padding: 12px; }
+        footer {
+            padding: 8px 12px; background: var(--panel); border-top: 1px solid var(--border);
+            font-size: 0.62rem; color: var(--mut); display: flex; justify-content: space-between; align-items: center;
+        }
+        .drawer {
+            position: fixed; inset: 0; background: var(--bg); z-index: 50;
+            transform: translateY(100%); transition: transform .25s ease;
+            display: flex; flex-direction: column;
+        }
+        .drawer.open { transform: translateY(0); }
+        .drawer-h { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: var(--panel); border-bottom: 1px solid var(--border); }
+        .drawer-c { flex: 1; overflow: auto; padding: 14px; }
+        label { display: block; font-size: 0.62rem; color: var(--mut); letter-spacing: .4px; text-transform: uppercase; margin: 10px 0 4px; }
+        input, select {
+            width: 100%; background: #020610; border: 1px solid var(--border); color: var(--text);
+            border-radius: 7px; padding: 8px 10px; font-size: 0.78rem;
+        }
+        .tiny { font-size: 0.6rem; color: var(--mut); margin-top: 4px; }
+    </style>
+</head>
+<body>
+    <header>
+        <span class="mono" style="color:var(--cyan);font-weight:800;font-size:0.85rem;">DESKGATE · 2.6.8</span>
+        <div class="chips">
+            <span id="activeHostChip" class="chip mono">TAB</span>
+            <span id="missChip" class="chip mono">MISS · —</span>
+            <button id="btnNewCase" class="btn btn-dim mono" style="padding:0 8px;" title="Clear chart and letter facts from RAM and start a new case">NEW CASE</button>
+            <button id="btnTogglePilotOps" class="btn btn-dim mono" style="padding:0 8px; color:var(--purple); border-color:var(--purple);">PILOT OPS</button>
+            <button id="btnToggleSettings" class="btn btn-dim mono" style="padding:0 8px;">CONFIG</button>
+        </div>
+    </header>
+
+    <div class="pin">
+        <div class="script mono">
+            1. Focus chart or denial letter → <strong>📸 READ CHART</strong> (chart and letter facts are kept apart)<br>
+            2. Focus portal → <strong>⚡ STAGE PORTAL</strong> or <strong>📝 STAGE APPEAL</strong><br>
+            3. Review and edit. Submit on the portal. Auto-log hashes the tracking ID and counts your edits.<br>
+            Appeal drafts quote RAM facts only. Empty = [MISS]. Never click Submit here.
+        </div>
+
+        <div class="row2">
+            <button id="btnReadChart" class="btn btn-cyan" title="Glass capture + parallel DOM">📸 READ CHART</button>
+            <button id="btnStagePortal" class="btn btn-amber" title="Map RAM facts onto empty labeled portal fields">⚡ STAGE PORTAL</button>
+        </div>
+        <button id="btnStageAppeal" class="btn btn-purple" style="width:100%" title="Draft appeal from quoted denial + chart facts in RAM">📝 STAGE APPEAL</button>
+        <button id="btnMarkSubmitted" class="btn btn-green" style="width:100%" title="Manual override if auto-log does not fire">✓ GATE (MANUAL OVERRIDE)</button>
+
+        <div id="livePipelineBar" class="live-pipeline-bar mono">
+            <span class="spin"></span>
+            <span id="livePipelineMsg">Processing...</span>
+        </div>
+    </div>
+
+    <main id="transcript"></main>
+
+    <footer class="mono">
+        <span id="mediaStatusText">Ready. 📸 Read → ⚡ Stage or 📝 Appeal.</span>
+        <span id="telemetryLatency" style="color:var(--neon);">READY</span>
+    </footer>
+
+    <div class="drawer" id="settingsDrawer">
+        <div class="drawer-h">
+            <span class="mono">CONFIG</span>
+            <button id="btnHideSettings" class="btn btn-dim" style="min-height:28px;padding:0 8px;">✕</button>
+        </div>
+        <div class="drawer-c">
+            <label>Backend Host URL</label>
+            <input id="extServerUrl" class="mono" value="https://deskgate.app">
+            <label>Desk code</label>
+            <input id="extDeskCode" class="mono" placeholder="DG-INTERNAL">
+            <div class="tiny">Groups GATE rows on /pilot. Use the desk's own code only on its live portal; showcase pages post under &lt;code&gt;-SYN. No patient names.</div>
+            <label>Desk key</label>
+            <input id="extAccessKey" type="password" class="mono">
+            <label>Reasoning Engine</label>
+            <select id="extModelProvider" class="mono">
+                <option value="gemini">Google Gemini — PHI only via Vertex AI in deskgate-production (BAA accepted)</option>
+                <option value="anthropic">Anthropic Claude — synthetic data only (no DeskGate BAA signed)</option>
+                <option value="grok">xAI Grok — synthetic data only (no BAA)</option>
+            </select>
+            <label>Anthropic API Key</label>
+            <input id="extAnthropicKey" type="password" class="mono">
+            <label>Google Gemini API Key</label>
+            <input id="extGeminiKey" type="password" class="mono">
+            <div class="tiny">An AI Studio key is not covered by the Google Cloud BAA. Use it with synthetic pages only.</div>
+            <label>xAI Grok API Key</label>
+            <input id="extGrokKey" type="password" class="mono">
+            <!-- HIPAA / Zero-Retention Mode (ZRM) Tri-Factor Gate -->
+            <div style="margin-top:16px; padding:12px; border:1px solid rgba(239,68,68,0.3); background:rgba(239,68,68,0.05); border-radius:7px;">
+                <div class="mono" style="font-size:0.68rem; font-weight:800; color:var(--danger); margin-bottom:8px; text-transform:uppercase;">
+                    🛡️ HIPAA / Zero-Retention Mode (ZRM)
+                </div>
+                <div class="tiny" style="margin:0 0 6px;">With all three checked, screen reads are refused on any engine except Google.</div>
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; text-transform:none; margin:6px 0; font-size:0.7rem;">
+                    <input type="checkbox" id="chkEnterprisePlan" style="width:auto; accent-color:var(--danger);">
+                    <span>Enterprise Plan / Covered Organization</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; text-transform:none; margin:6px 0; font-size:0.7rem;">
+                    <input type="checkbox" id="chkSignedBAA" style="width:auto; accent-color:var(--danger);">
+                    <span>Executed BAA chain (desk ↔ DeskGate, DeskGate ↔ Google Cloud)</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; text-transform:none; margin:6px 0; font-size:0.7rem;">
+                    <input type="checkbox" id="chkZeroRetention" style="width:auto; accent-color:var(--danger);">
+                    <span>Volatile RAM Execution (Purge Disk Keys)</span>
+                </label>
+                <div id="hipaaStatusBadge" class="mono" style="margin-top:8px; font-size:0.62rem; padding:6px; text-align:center; border-radius:4px; font-weight:bold; background:rgba(239,68,68,0.1); border:1px solid var(--danger); color:var(--danger);">
+                    STATUS: NOT YET ELIGIBLE
+                </div>
+            </div>
+            <button id="btnSaveConfig" class="btn btn-cyan" style="width:100%;margin-top:14px;">Save Configuration</button>
+        </div>
+    </div>
+    <!-- PILOT OPS DRAWER (Schedule M Governance & Scope) -->
+    <div class="drawer" id="pilotOpsDrawer">
+        <div class="drawer-h">
+            <span class="mono" style="color:var(--purple); font-weight:800;">📋 PILOT OPS · SCHEDULE M GOVERNANCE</span>
+            <button id="btnHidePilotOps" class="btn btn-dim" style="min-height:28px;padding:0 8px;">✕</button>
+        </div>
+        <div class="drawer-c">
+            <!-- 1. Trial Charter -->
+            <div style="border:1px solid var(--border); border-radius:7px; padding:10px; margin-bottom:12px; background:rgba(255,255,255,0.02);">
+                <div class="mono" style="font-size:0.68rem; font-weight:800; color:var(--amber); margin-bottom:6px; text-transform:uppercase;">1 · Pilot Charter</div>
+                <label>Initiative / Pod Name</label>
+                <input id="pc_name" class="mono" placeholder="e.g. Availity Denial &amp; Appeal Recovery Lane">
+                <label>Executive Sponsor (P&L Authority)</label>
+                <input id="pc_sponsor" class="mono" placeholder="e.g. VP of RCM Operations">
+                <label>Dedicated Coordinators</label>
+                <input id="pc_users" class="mono" placeholder="e.g. 4 named coordinators">
+                <label>Certified Pre-Period Baseline</label>
+                <input id="pc_baseline" class="mono" placeholder="e.g. 4.9 completed cases / coordinator-day">
+                <div class="tiny">Required before Day 1. Denominator for capacity recovery.</div>
+            </div>
+            <!-- 2. 12-Point Readiness Gate -->
+            <div style="border:1px solid var(--border); border-radius:7px; padding:10px; margin-bottom:12px; background:rgba(255,255,255,0.02);">
+                <div class="mono" style="font-size:0.68rem; font-weight:800; color:var(--cyan); margin-bottom:6px; text-transform:uppercase;">2 · 12-Point Readiness Gate</div>
+                <div id="pilotReadyChecks" class="mono" style="font-size:0.65rem; line-height:1.6;"></div>
+                <div id="pilotReadyScore" class="mono" style="margin-top:6px; color:var(--amber); font-size:0.68rem; font-weight:800;">0 of 12 checks confirmed — not ready for Day 1</div>
+            </div>
+            <!-- 3. Spear of Medicine Scope -->
+            <div style="border:1px solid var(--border); border-radius:7px; padding:10px; margin-bottom:14px; background:rgba(255,255,255,0.02);">
+                <div class="mono" style="font-size:0.68rem; font-weight:800; color:var(--purple); margin-bottom:6px; text-transform:uppercase;">3 · Spear of Medicine Scope</div>
+                <label>Active Boundary</label>
+                <input class="mono" value="Mid-Shaft (Form Staging &amp; Collation)" readonly style="color:var(--cyan);">
+                <label>Tip Restriction</label>
+                <input class="mono" value="Excluded (Zero medical necessity / clinical decisions)" readonly style="color:var(--danger);">
+            </div>
+            <button id="btnSavePilotOps" class="btn btn-purple" style="width:100%;">Save Pilot Parameters</button>
+        </div>
+    </div>
+    <script type="module" src="sidepanel.js"></script>
+</body>
+</html>

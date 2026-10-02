@@ -1,0 +1,20 @@
+DeskGate Operator Extension
+Copyright (c) 2026 DeskGate, Inc.
+
+This product includes software from third parties:
+
+1. Socket.IO browser build (socket.io.min.js)
+   Copyright (c) Guillermo Rauch and contributors
+   License: MIT
+   https://github.com/socketio/socket.io-client
+
+2. ElevenLabs JavaScript client (elevenlabs-client.js)
+   Copyright (c) ElevenLabs
+   Use of that file is subject to ElevenLabs’ SDK terms.
+   https://github.com/elevenlabs/elevenlabs-js
+
+No trademark license is granted. “DeskGate” and the mark on app-icon.png
+remain property of DeskGate, Inc.
+
+The hosted APIs at https://deskgate.app are not covered by the MIT license
+on this client.
