@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BrightArc Dental EHR · Periodontal Evaluation · Okafor, Daniel R.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f1f5f9; --surface: #ffffff; --surface-subtle: #f8fafc; --border: #cbd5e1; --border-subtle: #e2e8f0;
+      --text: #0f172a; --text-muted: #64748b; --brand: #0d9488; --brand-dark: #0f766e; --brand-light: #ccfbf1;
+      --success: #15803d; --success-bg: #dcfce7; --danger: #b91c1c; --danger-bg: #fee2e2;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); font-size: 13px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .ehr-topbar { background: #0f172a; color: #fff; padding: 8px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--brand); gap: 12px; flex-wrap: wrap; }
+    .ehr-brand { display: flex; align-items: center; gap: 12px; font-weight: 700; }
+    .ehr-badge { background: var(--brand); color: #fff; font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
+    .ehr-session-info { display: flex; gap: 16px; color: #94a3b8; font-size: 12px; flex-wrap: wrap; }
+    .ehr-session-info strong { color: #f8fafc; }
+    .patient-banner { background: #fff; border-bottom: 1px solid var(--border); padding: 12px 18px; display: grid; grid-template-columns: auto 1fr auto; gap: 20px; align-items: center; }
+    .patient-avatar { width: 44px; height: 44px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #475569; border: 1px solid var(--border); }
+    .patient-core h1 { font-size: 17px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+    .patient-meta-grid { display: flex; gap: 18px; margin-top: 4px; color: var(--text-muted); font-size: 12px; flex-wrap: wrap; }
+    .patient-meta-grid strong { color: #1e293b; font-weight: 600; }
+    .pill { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 12px; text-transform: uppercase; letter-spacing: .3px; }
+    .pill-green { background: var(--success-bg); color: var(--success); border: 1px solid #bbf7d0; }
+    .pill-teal { background: var(--brand-light); color: var(--brand-dark); border: 1px solid #99f6e4; }
+    .workspace { display: grid; grid-template-columns: 1fr 340px; gap: 12px; max-width: 1400px; margin: 12px auto; padding: 0 16px 40px; }
+    @media (max-width: 1100px) { .workspace { grid-template-columns: 1fr; } .patient-banner { grid-template-columns: auto 1fr; } }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .card-hdr { background: var(--surface-subtle); border-bottom: 1px solid var(--border-subtle); padding: 10px 14px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: #334155; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .card-body { padding: 14px; }
+    .note-sheet { border: 1px solid #e2e8f0; border-radius: 6px; padding: 18px 20px; font-size: 12.5px; line-height: 1.6; color: #1e293b; }
+    .note-header-block { border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 14px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px 18px; font-size: 12px; }
+    .note-section-title { font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .6px; color: var(--brand-dark); margin: 16px 0 6px; border-bottom: 1px solid #f1f5f9; padding-bottom: 3px; }
+    table.perio { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 12px; }
+    table.perio th { text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: .4px; color: var(--text-muted); border-bottom: 1px solid var(--border); padding: 6px 6px; }
+    table.perio td { border-bottom: 1px solid #f1f5f9; padding: 6px 6px; vertical-align: top; }
+    table.perio td.deep { color: #9a3412; font-weight: 600; }
+    .codes { background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px 12px; border-radius: 6px; margin: 10px 0; }
+    .callout { background: #f0fdfa; border: 1px solid #99f6e4; border-left: 3px solid var(--brand); padding: 10px 12px; border-radius: 6px; font-size: 12px; color: #134e4a; margin-top: 14px; }
+    .attachment-card { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 6px; }
+    .doc-icon { width: 28px; height: 32px; background: #fee2e2; border: 1px solid #fecaca; color: #b91c1c; font-weight: 800; font-size: 9px; display: flex; align-items: center; justify-content: center; border-radius: 3px; flex-shrink: 0; }
+    .doc-name { font-weight: 600; font-size: 11.5px; }
+    .doc-meta { font-size: 10.5px; color: #64748b; }
+  </style>
+  <style>
+    /* Showcase label for demo videos. Drawn by CSS from the body's data-test attributes,
+       so it shows on screen but is not page text: DeskGate's page read never sees it.
+       Shown only when the page is opened on its own, not when another page frames it. */
+    html.dg-labeled body::before {
+      content: "DENTAL TEST " attr(data-test) " OF 3  \00B7  " attr(data-test-title) "\A" "Watch: " attr(data-test-watch);
+      display: block; white-space: pre-wrap; margin: 0;
+      background: #111827; color: #fde68a; border-bottom: 3px solid #f59e0b;
+      font: 600 14px/1.55 system-ui, -apple-system, 'Segoe UI', Arial, sans-serif; letter-spacing: .2px;
+      padding: 10px 24px;
+    }
+  </style>
+  <script>try { if (window.top === window.self) document.documentElement.classList.add('dg-labeled'); } catch (_) {}</script>
+</head>
+<body data-test="1" data-test-title="Read a dental chart" data-test-watch="Patient, CDT codes, teeth, probing depths, bone loss and X-ray file names go into the panel.">
+
+  <header class="ehr-topbar">
+    <div class="ehr-brand">
+      <span>BrightArc Dental EHR</span>
+      <span class="ehr-badge">Synthetic specimen · Rel. 2026.3</span>
+    </div>
+    <div class="ehr-session-info">
+      <span>Office: <strong>Riverbend Dental Partners · Franklin office</strong></span>
+      <span>Workstation: <strong>OP-07</strong></span>
+    </div>
+  </header>
+
+  <section class="patient-banner">
+    <div class="patient-avatar">DO</div>
+    <div class="patient-core">
+      <h1><span>Okafor, Daniel R.</span> <span class="pill pill-green">Active chart</span></h1>
+      <div class="patient-meta-grid">
+        <span>Chart no. <strong class="mono">DEN-550219-04</strong></span>
+        <span>Phone <strong>(615) 555-0148</strong></span>
+        <span>Dental PPO <strong>verified 18-Aug-2026</strong></span>
+      </div>
+    </div>
+    <div><span class="pill pill-teal">Periodontal evaluation</span></div>
+  </section>
+
+  <main class="workspace">
+    <section>
+      <div class="card">
+        <div class="card-hdr">
+          <span>Periodontal Evaluation · Progress Note</span>
+          <span class="mono" style="font-weight:500;font-size:11px;color:var(--text-muted);">Signed &amp; Locked 20-Aug-2026</span>
+        </div>
+        <div class="card-body">
+          <div class="note-sheet">
+            <div class="note-header-block">
+              <div>Patient: Okafor, Daniel R.</div>
+              <div>Encounter: Periodontal evaluation, 20-Aug-2026</div>
+              <div>DOB: 07/22/1984</div>
+              <div>Rendering Provider: Priya Raman, DDS</div>
+              <div>Member ID: SYN-DM-550219</div>
+              <div>Rendering NPI: 1234567893</div>
+              <div>Group Number: GRP-DENT-207</div>
+              <div>Primary Payer: DentalPayer Mutual</div>
+              <div>Plan Type: Commercial Dental PPO</div>
+              <div>Address: 77 Harpeth Bend Dr, Franklin, TN 37064</div>
+            </div>
+
+            <div class="note-section-title">Chief complaint</div>
+            <p>Patient reports bleeding gums when brushing and a loose feeling in the lower right back teeth for about three months.</p>
+
+            <div class="note-section-title">Periodontal charting</div>
+            <p>Periodontal charting completed 20-Aug-2026: full mouth, six sites per tooth. Treated quadrants below.</p>
+            <table class="perio">
+              <thead>
+                <tr><th>Tooth</th><th>Facial probing</th><th>Lingual probing</th><th>Bleeding</th><th>Mobility</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Tooth #2 (UR)</td><td class="deep">MB 6 mm, B 5 mm, DB 6 mm</td><td class="deep">ML 5 mm, L 4 mm, DL 6 mm</td><td>BOP: yes</td><td>Mobility: I</td></tr>
+                <tr><td>Tooth #3 (UR)</td><td class="deep">MB 6 mm, B 5 mm, DB 7 mm</td><td class="deep">ML 6 mm, L 4 mm, DL 6 mm</td><td>BOP: yes</td><td>Mobility: I</td></tr>
+                <tr><td>Tooth #4 (UR)</td><td class="deep">MB 5 mm, B 4 mm, DB 5 mm</td><td class="deep">ML 5 mm, L 3 mm, DL 5 mm</td><td>BOP: yes</td><td>Mobility: 0</td></tr>
+                <tr><td>Tooth #5 (UR)</td><td class="deep">MB 5 mm, B 3 mm, DB 5 mm</td><td>ML 4 mm, L 3 mm, DL 5 mm</td><td>BOP: yes</td><td>Mobility: 0</td></tr>
+                <tr><td>Tooth #28 (LR)</td><td class="deep">MB 5 mm, B 3 mm, DB 5 mm</td><td>ML 4 mm, L 3 mm, DL 5 mm</td><td>BOP: yes</td><td>Mobility: 0</td></tr>
+                <tr><td>Tooth #29 (LR)</td><td class="deep">MB 5 mm, B 4 mm, DB 6 mm</td><td class="deep">ML 5 mm, L 4 mm, DL 6 mm</td><td>BOP: yes</td><td>Mobility: 0</td></tr>
+                <tr><td>Tooth #30 (LR)</td><td class="deep">MB 7 mm, B 5 mm, DB 6 mm</td><td class="deep">ML 6 mm, L 5 mm, DL 7 mm</td><td>BOP: yes</td><td>Mobility: II</td></tr>
+                <tr><td>Tooth #31 (LR)</td><td class="deep">MB 6 mm, B 5 mm, DB 6 mm</td><td class="deep">ML 6 mm, L 4 mm, DL 6 mm</td><td>BOP: yes</td><td>Mobility: I</td></tr>
+              </tbody>
+            </table>
+            <p style="margin-top:8px;color:var(--text-muted);font-size:12px;">Upper left and lower left quadrants probe 2 to 3 mm with localized bleeding; no root planing planned there.</p>
+
+            <div class="note-section-title">Radiographs</div>
+            <p>Radiographic findings: full-mouth series (FMX) taken 20-Aug-2026 shows horizontal bone loss of 30 to 40% at teeth #2 to #5 and #28 to #31, with subgingival calculus on #3, #30 and #31.</p>
+
+            <div class="note-section-title">Assessment</div>
+            <p>Diagnosis: generalized periodontitis, Stage III, Grade B. ICD-10 K05.323 (chronic periodontitis, generalized, severe).</p>
+
+            <div class="note-section-title">Plan</div>
+            <p>Plan: scaling and root planing recommended in the upper right and lower right quadrants, re-evaluation 6 weeks after treatment, then periodontal maintenance every 3 months.</p>
+            <div class="codes">
+              <div>Procedure codes (CDT): <strong class="mono">D4341 x2</strong> (scaling and root planing, four or more teeth per quadrant)</div>
+              <div>Teeth treated: UR #2, #3, #4, #5; LR #28, #29, #30, #31</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Completed 03-Sep-2026, local anesthesia, two visits</div>
+            </div>
+
+            <div class="callout">
+              Clinical rationale: probing depths of 5 to 7 mm with bleeding at eight teeth across the upper right and lower right quadrants, and 30 to 40% horizontal bone loss on the FMX; a routine cleaning cannot reach the subgingival calculus.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside>
+      <div class="card">
+        <div class="card-hdr"><span>Documents ready to attach</span><span class="pill pill-green">4 files</span></div>
+        <div class="card-body">
+          <div class="attachment-card"><div class="doc-icon">PDF</div><div><div class="doc-name">SYN_perio_chart_0820.pdf</div><div class="doc-meta">Periodontal charting · 2 pages</div></div></div>
+          <div class="attachment-card"><div class="doc-icon">PDF</div><div><div class="doc-name">SYN_FMX_radiographs_0820.pdf</div><div class="doc-meta">Full-mouth X-ray series · 18 images</div></div></div>
+          <div class="attachment-card"><div class="doc-icon">PDF</div><div><div class="doc-name">SYN_progress_note_0820.pdf</div><div class="doc-meta">Periodontal evaluation note · 2 pages</div></div></div>
+          <div class="attachment-card"><div class="doc-icon" style="background:#ccfbf1;border-color:#99f6e4;color:#0f766e;">JPG</div><div><div class="doc-name">SYN_intraoral_photos_0820.jpg</div><div class="doc-meta">Intraoral photos · 6 images</div></div></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:12px;">
+        <div class="card-hdr">Coverage</div>
+        <div class="card-body" style="font-size:11.5px;line-height:1.6;color:#475569;">
+          <div>Carrier portal: DentalPayer Essentials</div>
+          <div>Periodontal benefit: 80% after deductible</div>
+          <div>Claim filed 05-Sep-2026</div>
+        </div>
+      </div>
+    </aside>
+  </main>
+</body>
+</html>

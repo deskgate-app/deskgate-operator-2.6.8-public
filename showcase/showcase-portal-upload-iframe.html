@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>HealthPayer Essentials · Prior Auth with upload (iframe)</title>
+  <style>
+    body { font-family:Inter,system-ui,sans-serif; background:#f0f4f8; margin:0; font-size:13px; }
+    header { background:#0b2240; color:#fff; padding:12px 24px; }
+    .wrap { max-width:980px; margin:18px auto; padding:0 16px; }
+    iframe { width:100%; height:820px; border:2px dashed #94a3b8; border-radius:8px; background:#fff; }
+  </style>
+  <style>
+    /* Showcase label for demo videos. Drawn by CSS from the body's data-test attributes,
+       so it shows on screen but is not page text: DeskGate's page read never sees it.
+       Shown only when the page is opened on its own, not when another page frames it. */
+    html.dg-labeled body::before {
+      content: "TEST " attr(data-test) " OF 12  \00B7  " attr(data-test-title) "\A" "Watch: " attr(data-test-watch);
+      display: block; white-space: pre-wrap; margin: 0;
+      background: #111827; color: #fde68a; border-bottom: 3px solid #f59e0b;
+      font: 600 14px/1.55 system-ui, -apple-system, 'Segoe UI', Arial, sans-serif; letter-spacing: .2px;
+      padding: 10px 24px;
+    }
+  </style>
+  <script>try { if (window.top === window.self) document.documentElement.classList.add('dg-labeled'); } catch (_) {}</script>
+</head>
+<body data-test="05" data-test-title="Upload box inside an iframe" data-test-watch="The same upload warning, for a form inside a frame.">
+  <header><strong>HealthPayer Essentials · Provider Portal</strong></header>
+  <div class="wrap">
+    <p>TRAP: the upload form lives in the iframe below, the way Availity renders its workbench. Zero live PHI.</p>
+    <iframe src="showcase-portal-upload.html" title="Prior authorization workbench with upload"></iframe>
+  </div>
+</body>
+</html>

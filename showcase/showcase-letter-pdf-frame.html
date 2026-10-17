@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>HealthPayer Essentials · Correspondence viewer</title>
+  <style>
+    body { font-family:Inter,system-ui,sans-serif; background:#f0f4f8; margin:0; font-size:13px; }
+    header { background:#0b2240; color:#fff; padding:12px 24px; }
+    .wrap { max-width:960px; margin:18px auto; padding:0 16px; }
+    iframe { width:100%; height:780px; border:1px solid #cbd5e1; background:#fff; }
+  </style>
+  <style>
+    /* Showcase label for demo videos. Drawn by CSS from the body's data-test attributes,
+       so it shows on screen but is not page text: DeskGate's page read never sees it.
+       Shown only when the page is opened on its own, not when another page frames it. */
+    html.dg-labeled body::before {
+      content: "TEST " attr(data-test) " OF 12  \00B7  " attr(data-test-title) "\A" "Watch: " attr(data-test-watch);
+      display: block; white-space: pre-wrap; margin: 0;
+      background: #111827; color: #fde68a; border-bottom: 3px solid #f59e0b;
+      font: 600 14px/1.55 system-ui, -apple-system, 'Segoe UI', Arial, sans-serif; letter-spacing: .2px;
+      padding: 10px 24px;
+    }
+  </style>
+  <script>try { if (window.top === window.self) document.documentElement.classList.add('dg-labeled'); } catch (_) {}</script>
+</head>
+<body data-test="08" data-test-title="A PDF inside a portal page" data-test-watch="DeskGate spots the PDF inside the page and says only the screen read can see it.">
+  <header><strong>HealthPayer Essentials · Correspondence</strong></header>
+  <div class="wrap">
+    <p>Letter dated 22-Sep-2026 · opened in the portal's document viewer. Zero live PHI.</p>
+    <iframe src="showcase-denial.pdf" title="Decision letter (PDF)"></iframe>
+  </div>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DentalPayer Essentials · Claim Appeal / Reconsideration · DPM-CLM-55021934</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root { --header-bg:#134e4a; --bg:#f0f4f8; --card:#fff; --border:#cbd5e1; --text:#0f172a; --mut:#64748b; --primary:#0f766e; --success:#15803d; --danger:#b91c1c; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:Inter,system-ui,sans-serif; background:var(--bg); color:var(--text); font-size:13px; line-height:1.45; }
+    .mono { font-family:'JetBrains Mono',monospace; }
+    header { background:var(--header-bg); color:#fff; padding:12px 24px; display:flex; justify-content:space-between; align-items:center; }
+    .wrap { max-width:920px; margin:20px auto 60px; padding:0 16px; }
+    .box { background:var(--card); border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+    .hdr { background:#f8fafc; border-bottom:1px solid var(--border); padding:14px 20px; display:flex; justify-content:space-between; align-items:center; }
+    form { padding:22px 24px; }
+    .legend { font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.4px; color:var(--primary); margin:18px 0 10px; }
+    .row { display:grid; grid-template-columns:1fr 1fr; gap:14px 18px; margin-bottom:12px; }
+    .field { display:flex; flex-direction:column; gap:5px; }
+    .field.full { grid-column:1 / -1; }
+    label { font-size:11.5px; font-weight:700; color:#334155; text-transform:uppercase; }
+    input, textarea { border:1px solid #94a3b8; border-radius:5px; padding:9px 12px; font-size:13px; font-family:inherit; }
+    input.staged, textarea.staged { background:#f0fdf4; border-color:#16a34a; }
+    .drop { border:2px dashed #94a3b8; border-radius:8px; padding:12px; background:#f8fafc; }
+    .drop ul { margin:8px 0 0 18px; }
+    .actions { background:#f8fafc; border-top:1px solid var(--border); padding:14px 20px; display:flex; justify-content:flex-end; gap:10px; }
+    .btn { padding:10px 16px; font-weight:700; border-radius:6px; cursor:pointer; border:1px solid transparent; }
+    .btn-danger { background:var(--danger); color:#fff; }
+    .receipt { display:none; background:#f0fdf4; border:1px solid #86efac; border-radius:8px; padding:16px; margin-bottom:16px; }
+    .note { font-size:12px; color:var(--mut); margin-bottom:12px; }
+    @media (max-width:700px) { .row { grid-template-columns:1fr; } }
+  </style>
+  <style>
+    /* Showcase label for demo videos. Drawn by CSS from the body's data-test attributes,
+       so it shows on screen but is not page text: DeskGate's page read never sees it.
+       Shown only when the page is opened on its own, not when another page frames it. */
+    html.dg-labeled body::before {
+      content: "DENTAL TEST " attr(data-test) " OF 3  \00B7  " attr(data-test-title) "\A" "Watch: " attr(data-test-watch);
+      display: block; white-space: pre-wrap; margin: 0;
+      background: #111827; color: #fde68a; border-bottom: 3px solid #f59e0b;
+      font: 600 14px/1.55 system-ui, -apple-system, 'Segoe UI', Arial, sans-serif; letter-spacing: .2px;
+      padding: 10px 24px;
+    }
+  </style>
+  <script>try { if (window.top === window.self) document.documentElement.classList.add('dg-labeled'); } catch (_) {}</script>
+</head>
+<body data-test="3" data-test-title="Fill the dental appeal form" data-test-watch="Claim reference, CDT codes, teeth, quoted denial reason and the appeal fill. The appeal quotes probing depths, bone loss and the diagnosis from the chart. The X-ray upload box is named, never filled.">
+  <header>
+    <strong>DentalPayer Essentials · Claim Appeal &amp; Reconsideration</strong>
+    <span class="mono" style="font-size:12px;color:#ccfbf1;">Synthetic form · Human Submit</span>
+  </header>
+  <div class="wrap">
+    <div class="receipt" id="successReceipt">
+      <div style="color:var(--success);font-weight:800;margin-bottom:6px;">Appeal Successfully Submitted to Payer</div>
+      <div>Tracking / Appeal Reference: <strong class="mono" id="receipt_tid">—</strong></div>
+      <div style="font-size:12px;color:#166534;margin-top:6px;">Payer Status: Received · Dental Consultant Review · X-ray files received: <span id="receipt_docs">0</span></div>
+    </div>
+
+    <div class="box">
+      <div class="hdr">
+        <h2 style="font-size:14px;">Reconsideration of Denied Dental Claim</h2>
+        <span class="mono" style="font-size:11px;color:var(--mut);">Original claim DPM-CLM-55021934</span>
+      </div>
+      <form id="appealForm" onsubmit="return false;">
+        <p class="note">DeskGate stages quoted facts from RAM into these boxes. The office coordinator reviews and clicks Submit on this page. Autonomous filing is off.</p>
+
+        <div class="legend">1. Claim and patient</div>
+        <div class="row">
+          <div class="field">
+            <label for="f_ref">Original Claim Reference</label>
+            <input id="f_ref" name="claim_ref" class="mono" placeholder="e.g. DPM-CLM-55021934">
+          </div>
+          <div class="field">
+            <label for="f_member">Member / Subscriber ID</label>
+            <input id="f_member" name="member_id" class="mono">
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="f_name">Patient Full Name</label>
+            <input id="f_name" name="patient_name">
+          </div>
+          <div class="field">
+            <label for="f_dob">Date of Birth</label>
+            <input id="f_dob" name="dob" placeholder="MM/DD/YYYY">
+          </div>
+        </div>
+
+        <div class="legend">2. Services appealed</div>
+        <div class="row">
+          <div class="field">
+            <label for="f_cdt">Procedure Codes (CDT) &amp; Units</label>
+            <input id="f_cdt" name="cdt_codes" class="mono" placeholder="e.g. D4341 x2">
+          </div>
+          <div class="field">
+            <label for="f_teeth">Tooth Numbers / Quadrants</label>
+            <input id="f_teeth" name="teeth" placeholder="e.g. UR #2, #3; LR #30">
+          </div>
+        </div>
+
+        <div class="legend">3. Denial as stated by the carrier</div>
+        <div class="row">
+          <div class="field full">
+            <label for="f_denial_reason">Denial Reason (quoted from the determination)</label>
+            <textarea id="f_denial_reason" name="denial_reason" rows="3"></textarea>
+          </div>
+        </div>
+
+        <div class="legend">4. Appeal narrative</div>
+        <div class="row">
+          <div class="field full">
+            <label for="f_appeal">Appeal Narrative (dental necessity)</label>
+            <textarea id="f_appeal" name="appeal" rows="12" placeholder="Quoted draft lands here. The coordinator edits before Submit."></textarea>
+          </div>
+        </div>
+
+        <div class="legend">5. Supporting documents</div>
+        <div class="row">
+          <div class="field full">
+            <label for="f_att">Supporting Documents (named on the chart)</label>
+            <textarea id="f_att" name="attachments" rows="2" class="mono"></textarea>
+          </div>
+          <div class="field full">
+            <label for="f_xray">Radiographs and periodontal charting (PDF upload) *</label>
+            <div class="drop">
+              <input type="file" id="f_xray" accept="application/pdf,image/*" multiple required>
+              <ul id="xrayList"></ul>
+            </div>
+          </div>
+        </div>
+      </form>
+      <div class="actions">
+        <button type="button" class="btn" id="btnClear" style="background:#fff;border-color:var(--border);">Clear</button>
+        <button type="button" class="btn btn-danger" id="btnSubmit">Submit Appeal to Carrier</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let uploaded = 0;
+    document.querySelectorAll('#appealForm input:not([type=file]), #appealForm textarea').forEach((el) => {
+      el.addEventListener('input', () => el.classList.toggle('staged', !!el.value));
+    });
+    // Upload at once, then clear the box and list the file, the way most portals do.
+    $('f_xray').addEventListener('change', () => {
+      Array.from($('f_xray').files || []).forEach((f) => {
+        const li = document.createElement('li'); li.textContent = f.name + ' — uploaded'; $('xrayList').appendChild(li); uploaded += 1;
+      });
+      $('f_xray').value = '';
+    });
+    $('btnClear').onclick = () => {
+      document.querySelectorAll('#appealForm input:not([type=file]), #appealForm textarea').forEach((el) => {
+        el.value = '';
+        el.classList.remove('staged');
+      });
+      $('successReceipt').style.display = 'none';
+    };
+    $('btnSubmit').onclick = () => {
+      $('receipt_tid').textContent = 'APL-DN-' + Math.floor(10000000 + Math.random() * 90000000);
+      $('receipt_docs').textContent = String(uploaded);
+      $('successReceipt').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+  </script>
+</body>
+</html>

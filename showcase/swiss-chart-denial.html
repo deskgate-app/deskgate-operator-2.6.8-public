@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="de-CH">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Krankengeschichte · Brunner, Lukas · Praxis Dr. med. M. Keller</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#f1f5f9; --surface:#fff; --subtle:#f8fafc; --border:#cbd5e1; --border-subtle:#e2e8f0;
+      --text:#0f172a; --mut:#64748b; --brand:#b91c1c; --brand-dark:#7f1d1d; --brand-light:#fee2e2;
+      --ok:#15803d; --ok-bg:#dcfce7; --warn:#9a3412; --warn-bg:#ffedd5;
+    }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:Inter,system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--text); font-size:13px; line-height:1.5; -webkit-font-smoothing:antialiased; }
+    .mono { font-family:'JetBrains Mono',monospace; }
+    .topbar { background:#0f172a; color:#fff; padding:8px 16px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; border-bottom:2px solid var(--brand); }
+    .brand { display:flex; gap:10px; align-items:center; font-weight:700; }
+    .badge { background:var(--brand); color:#fff; font-size:10px; padding:2px 7px; border-radius:4px; font-weight:700; text-transform:uppercase; }
+    .session { color:#94a3b8; font-size:12px; display:flex; gap:14px; flex-wrap:wrap; }
+    .session strong { color:#f8fafc; }
+    .practice { background:#fff; border-bottom:1px solid var(--border); padding:10px 18px; font-size:12px; color:#334155; display:flex; flex-wrap:wrap; gap:4px 18px; }
+    .practice > div:first-child { font-weight:700; color:var(--text); }
+    .tabs { display:flex; gap:4px; padding:10px 18px 0; max-width:1400px; margin:0 auto; flex-wrap:wrap; }
+    .tab { border:1px solid var(--border); border-bottom:none; background:#e2e8f0; color:#334155; font:600 12.5px Inter,system-ui,sans-serif; padding:8px 14px; border-radius:6px 6px 0 0; cursor:pointer; }
+    .tab[aria-selected="true"] { background:#fff; color:var(--brand-dark); }
+    .wrap { max-width:1400px; margin:0 auto; padding:0 18px 40px; }
+    .panel { background:#fff; border:1px solid var(--border); border-radius:0 8px 8px 8px; padding:16px; }
+    .banner { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:4px 18px; padding:12px 14px; border:1px solid var(--border-subtle); border-radius:6px; background:var(--subtle); font-size:12px; margin-bottom:14px; }
+    .banner .name { grid-column:1 / -1; font-size:16px; font-weight:800; }
+    .grid { display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:14px; }
+    @media (max-width:1050px) { .grid { grid-template-columns:1fr; } .banner { grid-template-columns:1fr 1fr; } }
+    @media (max-width:560px) { .banner { grid-template-columns:1fr; } }
+    .card { border:1px solid var(--border); border-radius:8px; overflow:hidden; background:#fff; }
+    .card-hdr { background:var(--subtle); border-bottom:1px solid var(--border-subtle); padding:9px 14px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:#334155; display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+    .card-body { padding:14px; }
+    .entry > div { margin-bottom:8px; }
+    .lbl { font-weight:700; color:var(--brand-dark); }
+    table { width:100%; border-collapse:collapse; font-size:12px; }
+    th { text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:.4px; color:var(--mut); border-bottom:1px solid var(--border); padding:6px; }
+    td { border-bottom:1px solid #f1f5f9; padding:6px; vertical-align:top; }
+    td.cut { color:var(--brand); font-weight:700; }
+    .doc { display:flex; gap:10px; align-items:center; padding:7px 9px; background:var(--subtle); border:1px solid var(--border-subtle); border-radius:6px; margin-bottom:6px; }
+    .doc-icon { width:28px; height:32px; background:var(--brand-light); border:1px solid #fecaca; color:var(--brand); font-weight:800; font-size:9px; display:flex; align-items:center; justify-content:center; border-radius:3px; flex-shrink:0; }
+    .doc-name { font-weight:600; font-size:11.5px; word-break:break-all; }
+    .doc-meta { font-size:10.5px; color:var(--mut); }
+    .signed { margin-top:12px; font-size:11.5px; color:var(--mut); }
+    .letter { max-width:880px; }
+    .letter h1 { font-size:17px; margin:6px 0 4px; }
+    .stamp { display:inline-block; background:var(--warn-bg); color:var(--warn); border:1px solid #fdba74; font-weight:800; font-size:11px; letter-spacing:.4px; padding:3px 8px; border-radius:4px; text-transform:uppercase; }
+    .kv > div { padding:5px 0; border-bottom:1px solid #f1f5f9; }
+    .callout { background:#fff7ed; border-left:3px solid var(--warn); padding:10px 12px; margin:12px 0; }
+    .fine { font-size:11px; color:var(--mut); margin-top:14px; }
+  </style>
+  <style>
+    /* Showcase label for demo videos. Drawn by CSS from the body's data-test attributes, so DeskGate's
+       page-text read does not see it. A screen read (screenshot) does see it.
+       Shown only when the page is opened on its own, not when another page frames it. */
+    html.dg-labeled body::before {
+      content: "SCHWEIZ TEST " attr(data-test) " VON 3  \00B7  " attr(data-test-title) "\A" "Achten Sie auf: " attr(data-test-watch);
+      display: block; white-space: pre-wrap; margin: 0;
+      background: #111827; color: #fde68a; border-bottom: 3px solid #f59e0b;
+      font: 600 14px/1.55 system-ui, -apple-system, 'Segoe UI', Arial, sans-serif; letter-spacing: .2px;
+      padding: 10px 24px;
+    }
+  </style>
+  <script>try { if (window.top === window.self) document.documentElement.classList.add('dg-labeled'); } catch (_) {}</script>
+</head>
+<body data-test="1" data-test-title="Krankengeschichte lesen (Tab «Krankengeschichte»)" data-test-watch="Patient/in, AHV-Nr., GLN, ZSR, die TARDOC-Positionen mit Anzahl, die Konsultationsdauer und die KG-Zeilen gehen ins Panel. Die vier PDF-Dokumente in der KG enthalten keine Fotodokumentation (löst in S3 [FEHLT] aus).">
+
+  <header class="topbar">
+    <div class="brand"><span>Praxissoftware · Krankengeschichte</span><span class="badge">Synthetisches Muster</span></div>
+    <div class="session"><span>Arbeitsplatz <strong>MPA-02</strong></span><span>Sitzung <strong>HIN-Login (simuliert)</strong></span></div>
+  </header>
+
+  <section class="practice">
+    <div>Praxis Dr. med. M. Keller · Fachärztin für Allgemeine Innere Medizin</div>
+    <div>Musterstrasse 8, 8004 Zürich</div>
+    <div class="mono">GLN: 7609999001239 · ZSR: Z 9999.21</div>
+  </section>
+
+  <nav class="tabs" role="tablist" aria-label="Ansicht">
+    <button type="button" class="tab" role="tab" id="tab-kg" data-tab="kg" aria-controls="view-kg">Krankengeschichte</button>
+    <button type="button" class="tab" role="tab" id="tab-kuerzung" data-tab="kuerzung" aria-controls="view-kuerzung">Eingang: Antwort AlpaCare</button>
+  </nav>
+
+  <main class="wrap">
+
+    <!-- ===================== View 1: Krankengeschichte ===================== -->
+    <section class="panel" id="view-kg" role="tabpanel" aria-labelledby="tab-kg">
+      <div class="banner">
+        <div class="name">Brunner, Lukas</div>
+        <div>Patient/in: Brunner, Lukas</div>
+        <div>Geburtsdatum: 07.03.1961</div>
+        <div class="mono">AHV-Nr.: 756.1234.5678.97</div>
+        <div>Adresse: Musterweg 14, 8004 Zürich</div>
+        <div>Versicherer: AlpaCare Krankenversicherung AG (BAG-Nr. 00999)</div>
+        <div class="mono">Versicherten-Nr.: 118.440.27</div>
+        <div class="mono">Karten-Nr.: 80756 00999 0000418532</div>
+        <div>Gesetz: KVG · Vergütung: Tiers payant</div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <div class="card-hdr"><span>Konsultationseintrag</span><span class="mono" style="font-weight:500;">Elektronisch visiert 15.09.2026</span></div>
+          <div class="card-body entry">
+            <div><span class="lbl">Konsultation:</span> 15.09.2026, 14:05–14:43 (38 Min.)</div>
+            <div><span class="lbl">Behandelnde Ärztin:</span> Dr. med. M. Keller</div>
+            <div><span class="lbl">Anamnese:</span> Seit drei Wochen schmerzlose Wunde an der rechten Fusssohle unter dem Grosszehengrundgelenk, vom Patienten beim Duschen bemerkt. Diabetes mellitus Typ 2 seit 2011, HbA1c 8.4 % am 02.09.2026. Trägt seit Monaten dieselben Arbeitsschuhe.</div>
+            <div><span class="lbl">Befund:</span> Ulkus plantar unter Metatarsaleköpfchen I rechts, 1.8 × 1.2 cm, Tiefe 0.3 cm, Wundgrund granulierend, Probe-to-bone negativ, keine Rötung, keine Überwärmung. Monofilament-Test beidseits vermindert (4 von 10 Stellen). Fusspulse A. dorsalis pedis und A. tibialis posterior beidseits palpabel.</div>
+            <div><span class="lbl">Diagnosen:</span> E11.74 Diabetes mellitus Typ 2 mit diabetischem Fusssyndrom, nicht als entgleist bezeichnet</div>
+            <div><span class="lbl">Beurteilung:</span> Neuropathisches Ulkus plantar rechts bei diabetischem Fusssyndrom, Wagner-Grad 1, ohne Infektzeichen. Erstmanifestation.</div>
+            <div><span class="lbl">Beratung (18 Min.):</span> Diagnose und Amputationsrisiko bei fortbestehender Druckbelastung erklärt; Behandlungsplan mit Druckentlastung, Wundkontrollen und Blutzuckerzielen besprochen; Fragen des Patienten zu Schuhwerk und Alltag beantwortet.</div>
+            <div><span class="lbl">Procedere:</span> Entlastungsschuh verordnet. Wundkontrolle in 7 Tagen. Zuweisung an Podologie. Falls keine Besserung innert 2 Wochen: Zuweisung Wundambulatorium.</div>
+
+            <div style="margin-top:14px;"><span class="lbl">Leistungen (TARDOC):</span></div>
+            <table>
+              <thead><tr><th>Tarifposition</th><th>Anzahl</th><th>Bezeichnung</th></tr></thead>
+              <tbody>
+                <tr><td class="mono">CA.00.0010</td><td class="mono">1</td><td>Hausärztliche Konsultation, erste 5 Min.</td></tr>
+                <tr><td class="mono">CA.00.0020</td><td class="mono">15</td><td>+ weitere 1 Min.</td></tr>
+                <tr><td class="mono">CA.00.0030</td><td class="mono">18</td><td>Hausärztliche Beratung, pro 1 Min.</td></tr>
+              </tbody>
+            </table>
+            <div class="signed">Elektronisch visiert: Dr. med. M. Keller, 15.09.2026 15:02</div>
+          </div>
+        </div>
+
+        <aside>
+          <div class="card">
+            <div class="card-hdr"><span>Dokumente (in der KG)</span><span>4 PDF-Dateien</span></div>
+            <div class="card-body">
+              <a href="KG_Auszug_2026-09-15.pdf" download="KG_Auszug_2026-09-15.pdf" class="doc" style="text-decoration:none;color:inherit;cursor:pointer;">
+                <div class="doc-icon">PDF</div>
+                <div><div class="doc-name">KG_Auszug_2026-09-15.pdf</div><div class="doc-meta">Konsultationseintrag · 1 Seite (Download ⤓)</div></div>
+              </a>
+              <a href="Verordnung_Entlastungsschuh_2026-09-15.pdf" download="Verordnung_Entlastungsschuh_2026-09-15.pdf" class="doc" style="text-decoration:none;color:inherit;cursor:pointer;">
+                <div class="doc-icon">PDF</div>
+                <div><div class="doc-name">Verordnung_Entlastungsschuh_2026-09-15.pdf</div><div class="doc-meta">Verordnung · 1 Seite (Download ⤓)</div></div>
+              </a>
+              <a href="Zuweisung_Podologie_2026-09-15.pdf" download="Zuweisung_Podologie_2026-09-15.pdf" class="doc" style="text-decoration:none;color:inherit;cursor:pointer;">
+                <div class="doc-icon">PDF</div>
+                <div><div class="doc-name">Zuweisung_Podologie_2026-09-15.pdf</div><div class="doc-meta">Zuweisung · 1 Seite (Download ⤓)</div></div>
+              </a>
+              <a href="Labor_HbA1c_2026-09-02.pdf" download="Labor_HbA1c_2026-09-02.pdf" class="doc" style="text-decoration:none;color:inherit;cursor:pointer;">
+                <div class="doc-icon">PDF</div>
+                <div><div class="doc-name">Labor_HbA1c_2026-09-02.pdf</div><div class="doc-meta">Laborbefund · 1 Seite (Download ⤓)</div></div>
+              </a>
+              <div style="margin-top:10px;padding-top:8px;border-top:1px dashed var(--border);font-size:11px;color:var(--mut);">
+                Optionales Zusatzmuster für den manuellen Upload-Test in S3 (nicht in der KG hinterlegt, daher im Entwurf als <code>[FEHLT]</code> markiert):
+                <a href="Foto_Ulkus_Brunner_2026-09-15.jpg" download="Foto_Ulkus_Brunner_2026-09-15.jpg" class="doc" style="text-decoration:none;color:inherit;cursor:pointer;margin-top:6px;">
+                  <div class="doc-icon" style="background:#fef3c7;border-color:#fde68a;color:#92400e;">JPG</div>
+                  <div><div style="font-weight:600;font-size:11.5px;word-break:break-all;">Foto_Ulkus_Brunner_2026-09-15.jpg</div><div class="doc-meta">Manuelles Upload-Muster · 15.09.2026 (Download ⤓)</div></div>
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="margin-top:12px;">
+            <div class="card-hdr">Rechnung</div>
+            <div class="card-body kv">
+              <div>Rechnungs-Nr.: <span class="mono">2026-004517</span></div>
+              <div>Rechnungsdatum: 22.09.2026</div>
+              <div>Versand: elektronisch an AlpaCare (Tiers payant)</div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ===================== View 2: Antwort des Versicherers ===================== -->
+    <section class="panel" id="view-kuerzung" role="tabpanel" aria-labelledby="tab-kuerzung" hidden>
+      <div class="letter">
+        <span class="stamp">Kürzung</span>
+        <h1>AlpaCare Krankenversicherung AG · Leistungsabrechnung (Tiers payant)</h1>
+        <p style="color:var(--mut);margin-bottom:12px;">BAG-Nr. 00999 · Elektronische Antwort auf Ihre Rechnung · Datum: 06.10.2026</p>
+
+        <div class="kv">
+          <div>Entscheid: Teilweise vergütet (Kürzung)</div>
+          <div>Leistungsabrechnung Nr.: <span class="mono">AC-LA-2026-0731184</span></div>
+          <div>Ihre Rechnung Nr.: <span class="mono">2026-004517</span> vom 22.09.2026</div>
+          <div>Patient/in: Brunner, Lukas · Geburtsdatum: 07.03.1961 · Versicherten-Nr.: <span class="mono">118.440.27</span></div>
+          <div>Leistungserbringer: Dr. med. M. Keller · GLN: <span class="mono">7609999001239</span> · ZSR: <span class="mono">Z 9999.21</span></div>
+          <div>Gesetz: KVG · Behandlungsdatum: 15.09.2026</div>
+        </div>
+
+        <table style="margin-top:12px;">
+          <thead><tr><th>Tarifposition</th><th>Bezeichnung</th><th>Anzahl verrechnet</th><th>Anzahl vergütet</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">CA.00.0010</td><td>Hausärztliche Konsultation, erste 5 Min.</td><td class="mono">1</td><td class="mono">1</td></tr>
+            <tr><td class="mono">CA.00.0020</td><td>+ weitere 1 Min.</td><td class="mono">15</td><td class="mono">15</td></tr>
+            <tr><td class="mono">CA.00.0030</td><td>Hausärztliche Beratung, pro 1 Min.</td><td class="mono">18</td><td class="mono cut">0</td></tr>
+          </tbody>
+        </table>
+
+        <div class="kv" style="margin-top:12px;">
+          <div>Gekürzte Position: <span class="mono">CA.00.0030 x18</span> (vergütet: 0)</div>
+          <div>Bemerkungscode: <span class="mono">AC-TD-0412</span></div>
+        </div>
+
+        <div class="callout">
+          <div>Kürzungsgrund: Die hausärztliche Beratung CA.00.0030 setzt voraus, dass die Konsultationszeit 20 Minuten überschreitet. Konsultationsdauer sowie Inhalt und Dauer der Beratung sind aus der Rechnung nicht ersichtlich.</div>
+        </div>
+        <div class="kv">
+          <div>Grundlage: TARDOC, Leistungsposition CA.00.0030; Art. 56 Abs. 1 KVG</div>
+        </div>
+
+        <p style="margin-top:12px;">Einzureichende Angaben (Art. 42 Abs. 4 KVG): 1) Beginn und Ende der Konsultation gemäss Krankengeschichte; 2) Inhalt und Dauer der hausärztlichen Beratung; 3) Wundbefund mit Ausmessung; 4) Fotodokumentation der Wunde.</p>
+
+        <p style="margin-top:12px;color:var(--mut);font-size:12px;">
+          Ihre Stellungnahme reichen Sie innert 30 Tagen über das AlpaCare Partnerportal ein (Formular «Ärztliche Begründung / Stellungnahme bei Rechnungskürzung»).
+          Medizinische Angaben können Sie in begründeten Fällen ausschliesslich dem vertrauensärztlichen Dienst bekannt geben (Art. 42 Abs. 5 KVG).
+        </p>
+      </div>
+    </section>
+
+    <p class="fine">
+      Synthetisches Muster für den DeskGate-Showcase. Patient, Praxis und Versicherer sind erfunden.
+      GLN, AHV-Nr. und ZSR sind synthetisch (Prüfziffern gültig). TARDOC-Positionen nach Tarifstand 2026;
+      vor produktiver Nutzung gegen den offiziellen Tarifbrowser prüfen.
+      Weiter: <a href="swiss-appeal-portal.html">Partnerportal (Stellungnahme)</a> · <a href="schweiz-compliance.html">Datenfluss und Datenschutz</a>
+    </p>
+  </main>
+
+  <script>
+    (function () {
+      var VIEWS = {
+        kg: {
+          test: '1',
+          title: 'Krankengeschichte · Brunner, Lukas · Praxis Dr. med. M. Keller',
+          stripTitle: 'Krankengeschichte lesen (Tab «Krankengeschichte»)',
+          watch: 'Patient/in, AHV-Nr., GLN, ZSR, die TARDOC-Positionen mit Anzahl, die Konsultationsdauer und die KG-Zeilen gehen ins Panel. Die vier PDF-Dokumente in der KG enthalten keine Fotodokumentation (löst in S3 [FEHLT] aus).'
+        },
+        kuerzung: {
+          test: '2',
+          title: 'AlpaCare Leistungsabrechnung AC-LA-2026-0731184 · Kürzung',
+          stripTitle: 'Kürzungsmitteilung lesen (Tab «Eingang: Antwort AlpaCare»)',
+          watch: 'Leistungsabrechnung, Bemerkungscode, gekürzte Position CA.00.0030 x18, Kürzungsgrund und die vier angeforderten Angaben gehen in den Brief-Speicher, getrennt von der KG.'
+        }
+      };
+      function show(name) {
+        if (!VIEWS[name]) name = 'kg';
+        Object.keys(VIEWS).forEach(function (k) {
+          document.getElementById('view-' + k).hidden = (k !== name);
+          document.getElementById('tab-' + k).setAttribute('aria-selected', String(k === name));
+        });
+        var v = VIEWS[name];
+        document.title = v.title;
+        document.body.setAttribute('data-test', v.test);
+        document.body.setAttribute('data-test-title', v.stripTitle);
+        document.body.setAttribute('data-test-watch', v.watch);
+      }
+      document.querySelectorAll('.tab').forEach(function (b) {
+        b.addEventListener('click', function () { location.hash = b.getAttribute('data-tab'); });
+      });
+      window.addEventListener('hashchange', function () { show(location.hash.slice(1)); });
+      show(location.hash.slice(1));
+    })();
+  </script>
+</body>
+</html>
