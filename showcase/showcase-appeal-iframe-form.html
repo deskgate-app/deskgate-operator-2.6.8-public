@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Appeal Reconsideration Workbench</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root { --card:#fff; --border:#cbd5e1; --text:#0f172a; --mut:#64748b; --primary:#0066cc; --success:#15803d; --danger:#b91c1c; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:Inter,system-ui,sans-serif; background:#fff; color:var(--text); font-size:13px; line-height:1.45; padding:18px 20px; }
+    .mono { font-family:'JetBrains Mono',monospace; }
+    h2 { font-size:14px; margin-bottom:4px; }
+    .sub { font-size:12px; color:var(--mut); margin-bottom:16px; }
+    .legend { font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.4px; color:var(--primary); margin:16px 0 10px; }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px 18px; }
+    .cell { display:flex; flex-direction:column; gap:5px; }
+    .cell.full { grid-column:1 / -1; }
+    .cap { font-size:11px; font-weight:700; color:#334155; text-transform:uppercase; }
+    input { border:1px solid #94a3b8; border-radius:5px; padding:9px 11px; font-size:13px; font-family:inherit; width:100%; }
+    input.staged { background:#f0fdf4; border-color:#16a34a; }
+    .editor { min-height:150px; border:1px solid #94a3b8; border-radius:5px; padding:10px 12px; font-size:13px; line-height:1.5; white-space:pre-wrap; overflow:auto; }
+    .editor:focus { outline:2px solid #0066cc33; border-color:#0066cc; }
+    .editor.filled { background:#f0fdf4; border-color:#16a34a; }
+    .editor:empty::before { content:attr(data-placeholder); color:#94a3b8; }
+    .toolbar { display:flex; gap:6px; margin-bottom:6px; }
+    .toolbar span { font-size:10.5px; font-weight:700; color:#64748b; border:1px solid var(--border); border-radius:4px; padding:3px 7px; background:#f8fafc; }
+    .bar { margin-top:18px; padding-top:14px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; gap:10px; }
+    .btn { padding:10px 16px; font-weight:700; border-radius:6px; cursor:pointer; border:1px solid transparent; }
+    .btn-danger { background:var(--danger); color:#fff; }
+    .btn-plain { background:#fff; border-color:var(--border); }
+    .receipt { display:none; background:#f0fdf4; border:1px solid #86efac; border-radius:8px; padding:14px; margin-bottom:14px; }
+    .trap-fail { display:none; background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:14px; margin-bottom:14px; color:#991b1b; }
+    .statusline { font-size:11.5px; color:var(--mut); }
+  </style>
+<style id="dg-no-pilot-ops">#btnPilotOps, #pilotOpsDrawer, #pilotOpsModal, #pilotOpsSection, [data-pilot-ops], .pilot-ops-drawer, .pilot-ops-btn { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; }</style>
+</head>
+<body>
+  <div class="receipt" id="rcpt">
+    <div style="color:var(--success);font-weight:800;margin-bottom:6px;">Appeal Received by Payer</div>
+    <div>Appeal Reference: <strong class="mono" id="rcpt_tid">—</strong></div>
+    <div style="font-size:12px;color:#166534;margin-top:6px;">Narrative captured (<span id="rcpt_len">0</span> chars) · Human Submit</div>
+  </div>
+  <div class="trap-fail" id="trapFail">
+    <div style="font-weight:800;margin-bottom:6px;">Narrative not captured — appeal not submitted</div>
+    <div id="trapFailMsg"></div>
+  </div>
+
+  <h2>Reconsideration of Adverse Determination</h2>
+  <div class="sub mono">Embedded workbench · original ref BCBS-TN-PA-88429117 · synthetic specimen.</div>
+
+  <form id="appealForm" onsubmit="return false;">
+    <div class="legend">Case identifiers</div>
+    <div class="grid">
+      <div class="cell"><span class="cap">Original Tracking / Auth Reference</span><input name="trackingRef" aria-label="Original Tracking / Auth Reference" class="mono"></div>
+      <div class="cell"><span class="cap">Member / Subscriber ID</span><input name="subscriberId" aria-label="Member / Subscriber ID" class="mono"></div>
+      <div class="cell"><span class="cap">Patient Full Name</span><input name="patientName" aria-label="Patient Full Name"></div>
+      <div class="cell"><span class="cap">Date of Birth</span><input name="birthDate" aria-label="Date of Birth" placeholder="MM/DD/YYYY"></div>
+    </div>
+
+    <div class="legend">Appeal narrative (rich-text editor)</div>
+    <div class="toolbar" aria-hidden="true"><span>B</span><span>I</span><span>• List</span><span class="mono">Rich text</span></div>
+    <div id="f_appeal" class="editor" contenteditable="true" role="textbox" aria-multiline="true"
+         aria-label="Appeal / Rebuttal Narrative" data-deskgate-target="appeal"
+         data-placeholder="Quoted draft lands here. Coordinator edits before Submit."></div>
+
+    <div class="bar">
+      <span class="statusline mono" id="statusLine">Editor model: 0 chars · on screen: 0 chars</span>
+      <span>
+        <button type="button" class="btn btn-plain" id="btnClear">Clear</button>
+        <button type="button" class="btn btn-danger" id="btnSubmit">Submit Appeal to Payer</button>
+      </span>
+    </div>
+  </form>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const box = $('f_appeal');
+    let committed = '';
+    const seen = () => box.innerText.replace(/ /g, ' ').trim();
+    const paint = () => {
+      box.classList.toggle('filled', committed.length > 0);
+      $('statusLine').textContent = `Editor model: ${committed.length} chars · on screen: ${seen().length} chars`;
+    };
+    // The committed model only changes from a real edit event; Submit reads it, never the raw DOM.
+    box.addEventListener('input', () => { committed = seen(); paint(); });
+
+    document.querySelectorAll('#appealForm input').forEach((el) => {
+      el.addEventListener('input', () => el.classList.toggle('staged', !!el.value));
+    });
+
+    $('btnClear').onclick = () => {
+      document.querySelectorAll('#appealForm input').forEach((el) => { el.value = ''; el.classList.remove('staged'); });
+      box.innerHTML = ''; committed = ''; box.classList.remove('filled');
+      $('rcpt').style.display = 'none'; $('trapFail').style.display = 'none'; paint();
+    };
+
+    $('btnSubmit').onclick = () => {
+      paint();
+      const onScreen = seen();
+      $('rcpt').style.display = 'none'; $('trapFail').style.display = 'none';
+      if (!committed && onScreen) {
+        $('trapFailMsg').textContent = 'The narrative is visible (' + onScreen.length + ' chars) but the editor never received it through an edit event — the rich-text trap.';
+        $('trapFail').style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' }); return;
+      }
+      if (!committed) {
+        $('trapFailMsg').textContent = 'The appeal narrative is empty. Stage the appeal, then Submit.';
+        $('trapFail').style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' }); return;
+      }
+      const tid = 'APL-TN-' + Math.floor(10000000 + Math.random() * 90000000);
+      $('rcpt_tid').textContent = tid;
+      $('rcpt_len').textContent = String(committed.length);
+      $('rcpt').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    paint();
+  </script>
+</body>
+</html>

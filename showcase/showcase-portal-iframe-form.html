@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prior Authorization Workbench</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root { --card:#fff; --border:#cbd5e1; --text:#0f172a; --mut:#64748b; --primary:#0066cc; --success:#15803d; --danger:#b91c1c; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:Inter,system-ui,sans-serif; background:#fff; color:var(--text); font-size:13px; line-height:1.45; padding:18px 20px; }
+    .mono { font-family:'JetBrains Mono',monospace; }
+    h2 { font-size:14px; margin-bottom:4px; }
+    .sub { font-size:12px; color:var(--mut); margin-bottom:16px; }
+    .legend { font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.4px; color:var(--primary); margin:16px 0 10px; }
+    /* Varied field identification on purpose: name= here, aria-label there, a
+       wrapping <label> elsewhere, and real selects. No clean #f_* ids, so this
+       exercises the alias / fuzzy matcher, not a hand-fed id map. */
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px 18px; }
+    .cell { display:flex; flex-direction:column; gap:5px; }
+    .cell.full { grid-column:1 / -1; }
+    .cap { font-size:11px; font-weight:700; color:#334155; text-transform:uppercase; }
+    input, select, textarea { border:1px solid #94a3b8; border-radius:5px; padding:9px 11px; font-size:13px; font-family:inherit; width:100%; }
+    input.staged, select.staged, textarea.staged { background:#f0fdf4; border-color:#16a34a; }
+    .decoy { background:#f8fafc; }
+    .bar { margin-top:18px; padding-top:14px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; gap:10px; }
+    .btn { padding:10px 16px; font-weight:700; border-radius:6px; cursor:pointer; border:1px solid transparent; }
+    .btn-primary { background:var(--primary); color:#fff; }
+    .btn-plain { background:#fff; border-color:var(--border); }
+    .receipt { display:none; background:#f0fdf4; border:1px solid #86efac; border-radius:8px; padding:14px; margin-bottom:14px; }
+    .statusline { font-size:11.5px; color:var(--mut); }
+  </style>
+<style id="dg-no-pilot-ops">#btnPilotOps, #pilotOpsDrawer, #pilotOpsModal, #pilotOpsSection, [data-pilot-ops], .pilot-ops-drawer, .pilot-ops-btn { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; }</style>
+</head>
+<body>
+  <div class="receipt" id="rcpt">
+    <div style="color:var(--success);font-weight:800;margin-bottom:6px;">Submission Received</div>
+    <div>Authorization Reference: <strong class="mono" id="rcpt_tid">—</strong></div>
+    <div style="font-size:12px;color:#166534;margin-top:6px;">Filled <span id="rcpt_n">0</span> of <span id="rcpt_t">0</span> required fields · Human Submit</div>
+  </div>
+
+  <h2>Outpatient Prior Authorization Request</h2>
+  <div class="sub mono">Embedded workbench · synthetic specimen · the coordinator reviews and clicks Submit here.</div>
+
+  <form id="paForm" onsubmit="return false;">
+    <div class="legend">Member &amp; plan</div>
+    <div class="grid">
+      <div class="cell">
+        <span class="cap">Target Payer / Health Plan *</span>
+        <input name="payerName" aria-label="Target Payer / Health Plan" required>
+      </div>
+      <div class="cell">
+        <span class="cap">Plan type *</span>
+        <select name="planType" aria-label="Plan type" required>
+          <option value="">— select —</option>
+          <option>Commercial PPO</option>
+          <option>Commercial HMO</option>
+          <option>Medicare Advantage</option>
+          <option>Medicaid</option>
+        </select>
+      </div>
+      <div class="cell">
+        <label>Member / Subscriber ID *<input name="subscriberId" required></label>
+      </div>
+      <div class="cell">
+        <label>Group Number<input name="groupNo"></label>
+      </div>
+      <div class="cell">
+        <span class="cap">Patient Full Name (Last, First M.) *</span>
+        <input name="patientName" aria-label="Patient Full Name" required>
+      </div>
+      <div class="cell">
+        <span class="cap">Date of Birth *</span>
+        <input name="birthDate" aria-label="Date of Birth" placeholder="MM/DD/YYYY" required>
+      </div>
+      <div class="cell full">
+        <label>Subscriber Home Address<input name="homeAddress"></label>
+      </div>
+    </div>
+
+    <div class="legend">Provider &amp; request</div>
+    <div class="grid">
+      <div class="cell">
+        <span class="cap">Rendering / Attending Provider NPI *</span>
+        <input name="renderingNpi" aria-label="Rendering / Attending Provider NPI" required>
+      </div>
+      <div class="cell">
+        <span class="cap">Billing Tax ID (decoy)</span>
+        <input name="billingTin" class="decoy" aria-label="Billing Tax ID" placeholder="leave blank — not on the chart">
+      </div>
+      <div class="cell">
+        <span class="cap">Primary &amp; Secondary ICD-10 Codes *</span>
+        <input name="diagnosisCodes" aria-label="Primary and Secondary ICD-10 Codes" required>
+      </div>
+      <div class="cell">
+        <span class="cap">Requested CPT / HCPCS Codes &amp; Units *</span>
+        <input name="procedureCodes" aria-label="Requested CPT / HCPCS Codes and Units" required>
+      </div>
+      <div class="cell full">
+        <span class="cap">Medical Necessity Statement &amp; Step-Therapy Rationale</span>
+        <textarea name="clinicalNotes" aria-label="Medical Necessity Statement and Step-Therapy Rationale" rows="4"></textarea>
+      </div>
+      <div class="cell full">
+        <span class="cap">Attached Document Packets</span>
+        <textarea name="attachments" aria-label="Attached Document Packets" rows="2" class="mono"></textarea>
+      </div>
+    </div>
+
+    <div class="bar">
+      <span class="statusline mono" id="statusLine">0 of 0 required fields filled</span>
+      <span>
+        <button type="button" class="btn btn-plain" id="btnClear">Clear</button>
+        <button type="button" class="btn btn-primary" id="btnSubmit">Submit Authorization Request</button>
+      </span>
+    </div>
+  </form>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const reqEls = () => Array.from(document.querySelectorAll('#paForm [required]'));
+    const filledCount = () => reqEls().filter((el) => String(el.value || '').trim()).length;
+    const status = () => { $('statusLine').textContent = `${filledCount()} of ${reqEls().length} required fields filled`; };
+
+    document.querySelectorAll('#paForm input, #paForm select, #paForm textarea').forEach((el) => {
+      el.addEventListener('input', () => { el.classList.toggle('staged', !!String(el.value || '').trim()); status(); });
+      el.addEventListener('change', () => { el.classList.toggle('staged', !!String(el.value || '').trim()); status(); });
+    });
+
+    $('btnClear').onclick = () => {
+      document.querySelectorAll('#paForm input, #paForm select, #paForm textarea').forEach((el) => { el.value = ''; el.classList.remove('staged'); });
+      $('rcpt').style.display = 'none'; status();
+    };
+
+    $('btnSubmit').onclick = () => {
+      const tid = 'BCBS-TN-PA-' + Math.floor(10000000 + Math.random() * 90000000);
+      $('rcpt_tid').textContent = tid;
+      $('rcpt_n').textContent = String(filledCount());
+      $('rcpt_t').textContent = String(reqEls().length);
+      $('rcpt').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    status();
+  </script>
+</body>
+</html>

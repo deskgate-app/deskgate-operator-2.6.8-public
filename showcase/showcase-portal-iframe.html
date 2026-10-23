@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HealthPayer Essentials · Prior Auth (iframe) · Availity-style</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root { --header-bg:#0b2240; --bg:#f0f4f8; --border:#cbd5e1; --text:#0f172a; --mut:#64748b; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:Inter,system-ui,sans-serif; background:var(--bg); color:var(--text); font-size:13px; }
+    .mono { font-family:'JetBrains Mono',monospace; }
+    header { background:var(--header-bg); color:#fff; padding:12px 24px; display:flex; justify-content:space-between; align-items:center; }
+    .wrap { max-width:960px; margin:20px auto 60px; padding:0 16px; }
+    .trap-note { background:#fff7ed; border:1px solid #fed7aa; border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:12px; color:#9a3412; }
+    .frameLabel { font-size:11px; color:var(--mut); margin:0 0 6px 2px; text-transform:uppercase; letter-spacing:.4px; font-weight:700; }
+    iframe { width:100%; height:760px; border:2px dashed #94a3b8; border-radius:8px; background:#fff; }
+  </style>
+  <style>
+    /* Showcase label for demo videos. Drawn by CSS from the body's data-test attributes,
+       so it shows on screen but is not page text: DeskGate's page read never sees it.
+       Shown only when the page is opened on its own, not when another page frames it. */
+    html.dg-labeled body::before {
+      content: "TEST " attr(data-test) " OF 12  \00B7  " attr(data-test-title) "\A" "Watch: " attr(data-test-watch);
+      display: block; white-space: pre-wrap; margin: 0;
+      background: #111827; color: #fde68a; border-bottom: 3px solid #f59e0b;
+      font: 600 14px/1.55 system-ui, -apple-system, 'Segoe UI', Arial, sans-serif; letter-spacing: .2px;
+      padding: 10px 24px;
+    }
+  </style>
+  <script>try { if (window.top === window.self) document.documentElement.classList.add('dg-labeled'); } catch (_) {}</script>
+<style id="dg-no-pilot-ops">#btnPilotOps, #pilotOpsDrawer, #pilotOpsModal, #pilotOpsSection, [data-pilot-ops], .pilot-ops-drawer, .pilot-ops-btn { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; }</style>
+</head>
+<body data-test="03" data-test-title="Form inside an iframe, like Availity" data-test-watch="The boxes inside the frame fill. The decoy Billing Tax ID box stays empty.">
+  <header>
+    <strong>HealthPayer Essentials · Provider Portal</strong>
+    <span class="mono" style="font-size:12px;color:#cbd5e1;">Synthetic · form inside an iframe · Human Submit</span>
+  </header>
+  <div class="wrap">
+    <div class="trap-note mono">
+      TRAP: this page holds no form fields of its own — the prior-auth form lives inside the iframe below,
+      the way Availity renders its workbench. Staging must reach into the child frame. The top frame
+      answers the field inventory first and reports nothing, so this is the iframe reach test. Zero live PHI.
+    </div>
+    <p class="frameLabel">Payer workbench (embedded)</p>
+    <iframe src="showcase-portal-iframe-form.html" title="Prior authorization workbench"></iframe>
+  </div>
+</body>
+</html>

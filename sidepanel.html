@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DeskGate Operator</title>
+    <style>
+        :root {
+            --bg: #090d16; --panel: #0f172a; --cyan: #00e5ff; --neon: #00ff41;
+            --amber: #f59e0b; --border: rgba(255,255,255,.12); --text: #f8fafc; --mut: #94a3b8;
+            --danger: #ef4444; --purple: #c084fc;
+            --ch-red: #dc2626; --ch-red-soft: rgba(220,38,38,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg); color: var(--text);
+            font-family: Inter, system-ui, sans-serif;
+            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+        }
+        .mono { font-family: 'Share Tech Mono', monospace; }
+        header {
+            padding: 10px 14px; background: var(--panel); border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center; gap: 8px;
+        }
+        .chips { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+        .chip {
+            font-size: 0.58rem; letter-spacing: .3px; color: var(--mut);
+            border: 1px solid var(--border); border-radius: 999px; padding: 3px 8px;
+            max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .pin { padding: 12px; background: #0c1222; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
+        .script { font-size: 0.66rem; color: var(--mut); line-height: 1.45; }
+        .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .btn {
+            min-height: 44px; border-radius: 7px; cursor: pointer; font-weight: 800;
+            font-size: 0.74rem; letter-spacing: .3px; display: flex; align-items: center;
+            justify-content: center; gap: 6px; border: 1.5px solid transparent;
+            font-family: 'Share Tech Mono', monospace; background: transparent; color: var(--text);
+            transition: all 0.2s ease;
+        }
+        .btn-cyan { color: var(--cyan); border-color: var(--cyan); background: rgba(0,229,255,.12); }
+        .btn-cyan:hover:not(:disabled) { background: rgba(0,229,255,.24); }
+        .btn-amber { color: #fbbf24; border-color: var(--amber); background: rgba(245,158,11,.12); }
+        .btn-amber:hover:not(:disabled) { background: rgba(245,158,11,.24); }
+        .btn-purple { color: var(--purple); border-color: var(--purple); background: rgba(192,132,252,.12); }
+        .btn-purple:hover:not(:disabled) { background: rgba(192,132,252,.22); }
+        .btn-green { color: var(--neon); border-color: var(--neon); background: rgba(0,255,65,.1); font-size: 0.72rem; min-height: 36px; }
+        .btn-green:hover:not(:disabled) { background: rgba(0,255,65,.2); }
+        .btn-dim { color: var(--mut); border-color: var(--border); font-size: 0.68rem; min-height: 28px; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .live-pipeline-bar {
+            display: none; background: rgba(0, 229, 255, 0.08); border: 1px solid rgba(0, 229, 255, 0.3);
+            border-radius: 6px; padding: 7px 10px; font-size: 0.68rem; color: var(--cyan);
+            align-items: center; gap: 8px;
+        }
+        .live-pipeline-bar.active { display: flex; }
+        .spin {
+            width: 11px; height: 11px; border: 2px solid rgba(0, 229, 255, 0.2);
+            border-top-color: var(--cyan); border-radius: 50%;
+            animation: spin 0.7s linear infinite; display: inline-block;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #transcript { flex: 1; overflow-y: auto; padding: 12px; }
+        footer {
+            padding: 8px 12px; background: var(--panel); border-top: 1px solid var(--border);
+            font-size: 0.62rem; color: var(--mut); display: flex; justify-content: space-between; align-items: center;
+        }
+        .drawer {
+            position: fixed; inset: 0; background: var(--bg); z-index: 50;
+            transform: translateY(100%); transition: transform .25s ease;
+            display: flex; flex-direction: column;
+        }
+        .drawer.open { transform: translateY(0); }
+        .drawer-h { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: var(--panel); border-bottom: 1px solid var(--border); }
+        .drawer-c { flex: 1; overflow: auto; padding: 14px; }
+        label { display: block; font-size: 0.62rem; color: var(--mut); letter-spacing: .4px; text-transform: uppercase; margin: 10px 0 4px; }
+        input, select {
+            width: 100%; background: #020610; border: 1px solid var(--border); color: var(--text);
+            border-radius: 7px; padding: 8px 10px; font-size: 0.78rem;
+        }
+        .tiny { font-size: 0.6rem; color: var(--mut); margin-top: 4px; }
+
+        /* ------------------------------------------------------------------
+           Schweiz Cockpit Styles (Clean, institutional, high contrast)
+           ------------------------------------------------------------------ */
+        .swiss-box {
+            margin-top: 18px;
+            padding: 14px;
+            border: 1px solid rgba(220, 38, 38, 0.4);
+            background: linear-gradient(180deg, rgba(220, 38, 38, 0.08) 0%, rgba(15, 23, 42, 0.4) 100%);
+            border-radius: 8px;
+        }
+        .swiss-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .swiss-title {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #fca5a5;
+            letter-spacing: .4px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .swiss-badge {
+            font-size: 0.58rem;
+            font-weight: 800;
+            color: #86efac;
+            background: rgba(34, 197, 94, 0.12);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            letter-spacing: .3px;
+        }
+        .swiss-toggle-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .swiss-toggle-card label {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            cursor: pointer;
+            text-transform: none;
+            margin: 0;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #f8fafc;
+        }
+        .swiss-toggle-card input[type="checkbox"] {
+            width: auto;
+            margin-top: 2px;
+            accent-color: var(--ch-red);
+            flex-shrink: 0;
+        }
+        .swiss-desc {
+            font-size: 0.63rem;
+            color: #94a3b8;
+            line-height: 1.45;
+            margin: 6px 0 0 22px;
+        }
+        .swiss-showcase-title {
+            font-size: 0.62rem;
+            font-weight: 800;
+            color: #cbd5e1;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            margin: 14px 0 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .swiss-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+        .swiss-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #e2e8f0;
+            font-size: 0.66rem;
+            font-weight: 700;
+            min-height: 32px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        .swiss-btn:hover {
+            background: rgba(220, 38, 38, 0.18);
+            border-color: rgba(220, 38, 38, 0.5);
+            color: #fff;
+        }
+    </style>
+<style id="dg-no-pilot-ops">#btnPilotOps, #pilotOpsDrawer, #pilotOpsModal, #pilotOpsSection, [data-pilot-ops], .pilot-ops-drawer, .pilot-ops-btn { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; }</style>
+</head>
+<body>
+    <header>
+        <span class="mono" style="color:var(--cyan);font-weight:800;font-size:0.85rem;">DESKGATE · 2.6.8</span>
+        <div class="chips">
+            <span id="activeHostChip" class="chip mono">TAB</span>
+            <span id="missChip" class="chip mono">MISS · —</span>
+            <button id="btnNewCase" class="btn btn-dim mono" style="padding:0 8px;" data-i18n="btnNewCase" title="Clear chart and letter facts from RAM and start a new case">NEW CASE</button>
+            <!-- Pilot Ops removed -->
+            <button id="btnToggleSettings" class="btn btn-dim mono" style="padding:0 8px;" data-i18n="btnToggleSettings">CONFIG</button>
+        </div>
+    </header>
+
+    <div class="pin">
+        <div id="scriptText" class="script mono" data-i18n="scriptText">
+            1. Focus chart or denial letter → <strong>📸 READ CHART</strong> (chart and letter facts are kept apart)<br>
+            2. Focus portal → <strong>⚡ STAGE PORTAL</strong> or <strong>📝 STAGE APPEAL</strong><br>
+            3. Review and edit. Submit on the portal. Auto-log hashes the tracking ID and counts your edits.<br>
+            Appeal drafts quote RAM facts only. Empty = [MISS]. Never click Submit here.
+        </div>
+
+        <div class="row2">
+            <button id="btnReadChart" class="btn btn-cyan" data-i18n="btnReadChart" title="Glass capture + parallel DOM">📸 READ CHART</button>
+            <button id="btnStagePortal" class="btn btn-amber" data-i18n="btnStagePortal" title="Map RAM facts onto empty labeled portal fields">⚡ STAGE PORTAL</button>
+        </div>
+        <button id="btnStageAppeal" class="btn btn-purple" style="width:100%" data-i18n="btnStageAppeal" title="Draft appeal from quoted denial + chart facts in RAM">📝 STAGE APPEAL</button>
+
+        <details style="margin-top:8px;border:1px solid var(--border);border-radius:7px;padding:8px 10px;background:rgba(255,255,255,0.02);">
+            <summary class="mono" style="cursor:pointer;font-size:0.66rem;color:var(--mut);">Paste or text PDF (desktop practice software, Citrix)</summary>
+            <label for="pasteBox" style="margin-top:8px;">Paste chart or letter text</label>
+            <textarea id="pasteBox" rows="5" placeholder="Paste the KG or denial text here. Exact text, same parse path." style="width:100%;background:#020610;border:1px solid var(--border);color:var(--text);border-radius:7px;padding:8px;font-size:0.74rem;resize:vertical;"></textarea>
+            <button id="btnParsePaste" class="btn btn-cyan" type="button" style="width:100%;margin-top:6px;">PARSE PASTE</button>
+            <label for="pdfFile" style="margin-top:10px;">Text PDF (no scan)</label>
+            <input id="pdfFile" type="file" accept="application/pdf,.pdf" style="font-size:0.7rem;">
+            <button id="btnParsePdf" class="btn btn-amber" type="button" style="width:100%;margin-top:6px;">PARSE PDF</button>
+            <div class="tiny">Paste and PDF text go to the same Swiss server path as page text. Scanned PDFs with no text layer are refused. DeskGate never attaches files to the portal.</div>
+        </details>
+
+        <button id="btnMarkSubmitted" class="btn btn-green" style="width:100%" data-i18n="btnMarkSubmitted" title="Manual override if auto-log does not fire">✓ GATE (MANUAL OVERRIDE)</button>
+
+        <div id="livePipelineBar" class="live-pipeline-bar mono">
+            <span class="spin"></span>
+            <span id="livePipelineMsg" data-i18n="livePipelineMsg">Processing...</span>
+        </div>
+    </div>
+
+    <main id="transcript"></main>
+
+    <footer class="mono">
+        <span id="mediaStatusText" data-i18n="mediaStatusText">Ready. 📸 Read → ⚡ Stage or 📝 Appeal.</span>
+        <span id="telemetryLatency" style="color:var(--neon);">READY</span>
+    </footer>
+
+    <div class="drawer" id="settingsDrawer">
+        <div class="drawer-h">
+            <span class="mono" data-i18n="configHeader">CONFIG</span>
+            <button id="btnHideSettings" class="btn btn-dim" style="min-height:28px;padding:0 8px;">✕</button>
+        </div>
+        <div class="drawer-c">
+            <label data-i18n="lblBackend">Backend Host URL</label>
+            <input id="extServerUrl" class="mono" value="https://deskgate.app">
+            <label data-i18n="lblDeskCode">Desk code</label>
+            <input id="extDeskCode" class="mono" placeholder="DG-INTERNAL">
+            <div class="tiny" data-i18n="tinyDeskCode">Groups GATE rows on /pilot. Use the desk's own code only on its live portal; showcase pages post under <code>&lt;desk&gt;-SYN</code>. No patient names.</div>
+            <label data-i18n="lblDeskKey">Desk key</label>
+            <input id="extAccessKey" type="password" class="mono">
+            <label data-i18n="lblEngine">Reasoning Engine</label>
+            <select id="extModelProvider" class="mono" disabled>
+                <option value="gemini" selected>Google Gemini — PHI only via Vertex AI in deskgate-production (BAA accepted)</option>
+            </select>
+            <div class="tiny" style="margin-top:4px;">Locked to Gemini. DeskGate routes live PHI only through Vertex AI under the Google Cloud BAA. No other engine is available.</div>
+
+            <!-- HIPAA / Zero-Retention Mode (ZRM) Tri-Factor Gate -->
+            <div style="margin-top:16px; padding:12px; border:1px solid rgba(239,68,68,0.3); background:rgba(239,68,68,0.05); border-radius:7px;">
+                <div class="mono" style="font-size:0.68rem; font-weight:800; color:var(--danger); margin-bottom:8px; text-transform:uppercase;" data-i18n="hipaaTitle">
+                    🛡️ HIPAA / Zero-Retention Mode (ZRM)
+                </div>
+                <div class="tiny" style="margin:0 0 6px;" data-i18n="hipaaDesc">With all three checked, screen reads are refused on any engine except Google.</div>
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; text-transform:none; margin:6px 0; font-size:0.7rem;">
+                    <input type="checkbox" id="chkEnterprisePlan" style="width:auto; accent-color:var(--danger);">
+                    <span data-i18n="chkEnterprise">Enterprise Plan / Covered Organization</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; text-transform:none; margin:6px 0; font-size:0.7rem;">
+                    <input type="checkbox" id="chkSignedBAA" style="width:auto; accent-color:var(--danger);">
+                    <span data-i18n="chkBAA">Executed BAA chain (desk ↔ DeskGate, DeskGate ↔ Google Cloud)</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; text-transform:none; margin:6px 0; font-size:0.7rem;">
+                    <input type="checkbox" id="chkZeroRetention" style="width:auto; accent-color:var(--danger);">
+                    <span data-i18n="chkZRM">Volatile RAM Execution (Purge Disk Keys)</span>
+                </label>
+                <div id="hipaaStatusBadge" class="mono" style="margin-top:8px; font-size:0.62rem; padding:6px; text-align:center; border-radius:4px; font-weight:bold; background:rgba(239,68,68,0.1); border:1px solid var(--danger); color:var(--danger);">
+                    STATUS: NOT YET ELIGIBLE
+                </div>
+            </div>
+
+            <!-- ----------------------------------------------------------------
+                 SCHWEIZ COCKPIT (Clean, Institutional & High-Contrast)
+                 ---------------------------------------------------------------- -->
+            <div class="swiss-box">
+                <div class="swiss-header">
+                    <div class="swiss-title mono">
+                        <span>🇨🇭 Schweiz · TARDOC 2026</span>
+                    </div>
+                    <span class="swiss-badge mono">revDSG · CH</span>
+                </div>
+
+                <!-- Modus 1: Schweiz-Modus (Default / Zero-Data-Egress) -->
+                <div class="swiss-toggle-card">
+                    <label>
+                        <input type="checkbox" id="chkSwissMode">
+                        <span>Schweiz-Modus: Analyse auf Flow Swiss</span>
+                    </label>
+                    <div class="swiss-desc">
+                        Die Erweiterung liest in der Browser-Sitzung. Seitentext, eingefügter Text und PDF-Text gehen zur Analyse an Flow Swiss in der Schweiz. Kein ausländischer Unterauftragsverarbeiter für diesen Weg.
+                    </div>
+                </div>
+
+                <!-- Modus 2: Bildschirmlesung (Zusatzoption für Citrix / PDF) — temporarily blocked -->
+                <div class="swiss-toggle-card">
+                    <label style="cursor:not-allowed; opacity:0.65;">
+                        <input type="checkbox" id="chkSwissVision" disabled>
+                        <span>Zusatzoption: Bildschirmlesung (PDF & Citrix)</span>
+                    </label>
+                    <div class="swiss-desc">
+                        Temporär deaktiviert. Bildausschnitt-Analyse ist bis zur direkten Anbindung an Vertex AI (europe-west6) nicht verfügbar. Standardmässig und verbindlich aus.
+                    </div>
+                </div>
+
+                <!-- Showcase Demo Suite -->
+                <div class="swiss-showcase-title mono">
+                    <span>⚡ Synthetische Demo-Suite (Backend Host):</span>
+                </div>
+                <div class="swiss-grid">
+                    <button id="btnSwissDemoKg" class="swiss-btn" type="button">1 · KG lesen</button>
+                    <button id="btnSwissDemoKuerzung" class="swiss-btn" type="button">2 · Kürzung lesen</button>
+                    <button id="btnSwissDemoPortal" class="swiss-btn" type="button">3 · Stellungnahme</button>
+                    <button id="btnSwissDemoInfo" class="swiss-btn" type="button">Datenschutzblatt</button>
+                </div>
+            </div>
+
+            <button id="btnSaveConfig" class="btn btn-cyan" style="width:100%;margin-top:14px;" data-i18n="btnSaveConfig">Save Configuration</button>
+        </div>
+    </div>
+
+    <!-- PILOT OPS DRAWER (Schedule M Governance & Scope) -->
+    <div class="drawer" id="pilotOpsDrawer">
+        <div class="drawer-h">
+            <span class="mono" style="color:var(--purple); font-weight:800;" data-i18n="pilotHeader"></span>
+            <button id="btnHidePilotOps" class="btn btn-dim" style="min-height:28px;padding:0 8px;">✕</button>
+        </div>
+        <div class="drawer-c">
+            <!-- 1. Trial Charter -->
+            <div style="border:1px solid var(--border); border-radius:7px; padding:10px; margin-bottom:12px; background:rgba(255,255,255,0.02);">
+                <div class="mono" style="font-size:0.68rem; font-weight:800; color:var(--amber); margin-bottom:6px; text-transform:uppercase;" data-i18n="pilot1">1 · Pilot Charter</div>
+                <label data-i18n="lblPcName">Initiative / Pod Name</label>
+                <input id="pc_name" class="mono" placeholder="e.g. Availity Denial & Appeal Recovery Lane">
+                <label data-i18n="lblPcSponsor">Executive Sponsor (P&L Authority)</label>
+                <input id="pc_sponsor" class="mono" placeholder="e.g. VP of RCM Operations">
+                <label data-i18n="lblPcUsers">Dedicated Coordinators</label>
+                <input id="pc_users" class="mono" placeholder="e.g. 4 named coordinators">
+                <label data-i18n="lblPcBaseline">Certified Pre-Period Baseline</label>
+                <input id="pc_baseline" class="mono" placeholder="e.g. 4.9 completed cases / coordinator-day">
+                <div class="tiny" data-i18n="tinyBaseline">Required before Day 1. Denominator for capacity recovery.</div>
+            </div>
+            <!-- 2. 12-Point Readiness Gate -->
+            <div style="border:1px solid var(--border); border-radius:7px; padding:10px; margin-bottom:12px; background:rgba(255,255,255,0.02);">
+                <div class="mono" style="font-size:0.68rem; font-weight:800; color:var(--cyan); margin-bottom:6px; text-transform:uppercase;" data-i18n="pilot2">2 · 12-Point Readiness Gate</div>
+                <div id="pilotReadyChecks" class="mono" style="font-size:0.65rem; line-height:1.6;"></div>
+                <div id="pilotReadyScore" class="mono" style="margin-top:6px; color:var(--amber); font-size:0.68rem; font-weight:800;">0 of 12 checks confirmed — not ready for Day 1</div>
+            </div>
+            <!-- 3. Spear of Medicine Scope -->
+            <div style="border:1px solid var(--border); border-radius:7px; padding:10px; margin-bottom:14px; background:rgba(255,255,255,0.02);">
+                <div class="mono" style="font-size:0.68rem; font-weight:800; color:var(--purple); margin-bottom:6px; text-transform:uppercase;" data-i18n="pilot3">3 · Spear of Medicine Scope</div>
+                <label data-i18n="lblBoundary">Active Boundary</label>
+                <input class="mono" value="Mid-Shaft (Form Staging & Collation)" readonly style="color:var(--cyan);">
+                <label data-i18n="lblTip">Tip Restriction</label>
+                <input class="mono" value="Excluded (Zero medical necessity / clinical decisions)" readonly style="color:var(--danger);">
+            </div>
+            <button id="btnSavePilotOps" class="btn btn-purple" style="width:100%;" data-i18n="btnSavePilot"></button>
+        </div>
+    </div>
+    <script type="module" src="sidepanel.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+DeskGate Operator Extension
+Copyright (c) 2026 DeskGate, Inc.
+
+No third-party code is bundled in this package. The side panel loads the
+Inter and Share Tech Mono fonts from Google Fonts (SIL Open Font License).
+
+No trademark license is granted. "DeskGate" and the mark on app-icon.png
+remain property of DeskGate, Inc.
+
+The hosted APIs at https://deskgate.app are not covered by the MIT license
+on this client.

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DentalPayer Essentials · Claim Determination · DPM-CLM-55021934</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root { --header-bg:#134e4a; --bg:#f0f4f8; --card:#fff; --border:#cbd5e1; --text:#0f172a; --mut:#64748b; --danger:#b91c1c; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:Inter,system-ui,sans-serif; background:var(--bg); color:var(--text); font-size:13px; line-height:1.5; }
+    .mono { font-family:'JetBrains Mono',monospace; }
+    header { background:var(--header-bg); color:#fff; padding:12px 24px; display:flex; justify-content:space-between; align-items:center; }
+    .wrap { max-width:820px; margin:24px auto 60px; padding:0 16px; }
+    .letter { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:28px 32px; }
+    h1 { font-size:18px; margin-bottom:6px; }
+    .stamp { display:inline-block; background:#fef2f2; color:var(--danger); border:1px solid #fecaca; font-weight:800; font-size:11px; letter-spacing:.4px; padding:3px 8px; border-radius:4px; text-transform:uppercase; }
+    .kv { width:100%; border-collapse:collapse; margin:16px 0; }
+    .kv td { padding:7px 4px; border-bottom:1px solid #f1f5f9; vertical-align:top; }
+    .kv td:first-child { width:210px; color:var(--mut); font-weight:700; }
+    .callout { background:#fef2f2; border-left:3px solid var(--danger); padding:12px 14px; margin:16px 0; }
+    nav { margin-top:16px; font-size:12px; }
+    a { color:#0f766e; }
+  </style>
+  <style>
+    /* Showcase label for demo videos. Drawn by CSS from the body's data-test attributes,
+       so it shows on screen but is not page text: DeskGate's page read never sees it.
+       Shown only when the page is opened on its own, not when another page frames it. */
+    html.dg-labeled body::before {
+      content: "DENTAL TEST " attr(data-test) " OF 3  \00B7  " attr(data-test-title) "\A" "Watch: " attr(data-test-watch);
+      display: block; white-space: pre-wrap; margin: 0;
+      background: #111827; color: #fde68a; border-bottom: 3px solid #f59e0b;
+      font: 600 14px/1.55 system-ui, -apple-system, 'Segoe UI', Arial, sans-serif; letter-spacing: .2px;
+      padding: 10px 24px;
+    }
+  </style>
+  <script>try { if (window.top === window.self) document.documentElement.classList.add('dg-labeled'); } catch (_) {}</script>
+<style id="dg-no-pilot-ops">#btnPilotOps, #pilotOpsDrawer, #pilotOpsModal, #pilotOpsSection, [data-pilot-ops], .pilot-ops-drawer, .pilot-ops-btn { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; }</style>
+</head>
+<body data-test="2" data-test-title="Read the dental denial" data-test-watch="Reason, code, policy, claim reference and the four requested items are read. The letter&#x27;s facts are kept apart from the chart&#x27;s.">
+  <header>
+    <strong>DentalPayer Essentials · Claims</strong>
+    <span class="mono" style="font-size:12px;color:#ccfbf1;">Letter · Synthetic specimen</span>
+  </header>
+  <div class="wrap">
+    <div class="letter">
+      <span class="stamp">Claim determination: denied</span>
+      <h1>Dental Claim Determination Letter</h1>
+      <p style="color:var(--mut);margin:6px 0 16px;">Synthetic determination specimen for the DeskGate v2.6.8 dental showcase. Zero live PHI.</p>
+
+      <table class="kv">
+        <tr><td>Decision:</td><td>Denied</td></tr>
+        <tr><td>Claim Reference:</td><td class="mono">DPM-CLM-55021934</td></tr>
+        <tr><td>Member ID:</td><td class="mono">SYN-DM-550219</td></tr>
+        <tr><td>Patient Name:</td><td>Okafor, Daniel R.</td></tr>
+        <tr><td>Date of Birth:</td><td>07/22/1984</td></tr>
+        <tr><td>Procedure (CDT):</td><td class="mono">D4341 x2 (UR, LR)</td></tr>
+        <tr><td>Date of service:</td><td>03-Sep-2026</td></tr>
+        <tr><td>Denial code:</td><td class="mono">DEN-PERIO-07</td></tr>
+        <tr><td>Policy:</td><td>Dental Clinical Policy DCP-PERIO-2026 §2.1: scaling and root planing requires probing depths of 5 mm or more on at least four teeth per quadrant, with radiographic bone loss</td></tr>
+      </table>
+
+      <div class="callout">
+        <strong>Reason for denial:</strong>
+        <span>The claim did not include periodontal charting or radiographs, so probing depths of 5 mm or more and bone loss in the treated quadrants could not be verified.</span>
+      </div>
+
+      <p><strong>Missing / additional documentation requested:</strong></p>
+      <p>Periodontal charting with probing depths for each tooth in the treated quadrants (dated within 12 months); Radiographs showing bone loss in the treated quadrants (dated); Tooth numbers treated in each quadrant; Periodontal diagnosis (stage and grade).</p>
+
+      <p style="margin-top:16px;color:var(--mut);font-size:12px;">
+        Appeal window: 180 days from this letter. Reconsideration is filed on the provider portal appeal form. The office's coordinator remains the filing actor.
+      </p>
+    </div>
+    <nav>
+      Dental showcase:
+      <a href="showcase-dental-chart.html">chart</a> ·
+      <a href="showcase-dental-appeal.html">appeal form</a>
+    </nav>
+  </div>
+</body>
+</html>

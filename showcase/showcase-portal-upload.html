@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HealthPayer Essentials · Prior Auth with document upload</title>
+  <style>
+    :root { --header-bg:#0b2240; --bg:#f0f4f8; --border:#cbd5e1; --text:#0f172a; --mut:#64748b; --primary:#0066cc; --success:#15803d; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:Inter,system-ui,sans-serif; background:var(--bg); color:var(--text); font-size:13px; line-height:1.45; }
+    .mono { font-family:'JetBrains Mono',ui-monospace,monospace; }
+    header { background:var(--header-bg); color:#fff; padding:12px 24px; display:flex; justify-content:space-between; align-items:center; }
+    .menu { display:none; }
+    .wrap { max-width:920px; margin:20px auto 60px; padding:0 16px; }
+    .trap-note { background:#fff7ed; border:1px solid #fed7aa; border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:12px; color:#9a3412; }
+    .box { background:#fff; border:1px solid var(--border); border-radius:8px; padding:20px 22px; }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px 18px; }
+    .cell { display:flex; flex-direction:column; gap:5px; }
+    .cell.full { grid-column:1 / -1; }
+    label { font-size:11px; font-weight:700; color:#334155; text-transform:uppercase; }
+    input, textarea { border:1px solid #94a3b8; border-radius:5px; padding:9px 11px; font-size:13px; font-family:inherit; }
+    .drop { border:2px dashed #94a3b8; border-radius:8px; padding:14px; background:#f8fafc; }
+    .drop ul { margin:8px 0 0 18px; }
+    .bar { margin-top:16px; display:flex; justify-content:flex-end; gap:10px; }
+    .btn { padding:10px 16px; font-weight:700; border-radius:6px; cursor:pointer; border:1px solid transparent; background:var(--primary); color:#fff; }
+    .receipt { display:none; background:#f0fdf4; border:1px solid #86efac; border-radius:8px; padding:14px; margin-bottom:14px; }
+  </style>
+  <style>
+    /* Showcase label for demo videos. Drawn by CSS from the body's data-test attributes,
+       so it shows on screen but is not page text: DeskGate's page read never sees it.
+       Shown only when the page is opened on its own, not when another page frames it. */
+    html.dg-labeled body::before {
+      content: "TEST " attr(data-test) " OF 12  \00B7  " attr(data-test-title) "\A" "Watch: " attr(data-test-watch);
+      display: block; white-space: pre-wrap; margin: 0;
+      background: #111827; color: #fde68a; border-bottom: 3px solid #f59e0b;
+      font: 600 14px/1.55 system-ui, -apple-system, 'Segoe UI', Arial, sans-serif; letter-spacing: .2px;
+      padding: 10px 24px;
+    }
+  </style>
+  <script>try { if (window.top === window.self) document.documentElement.classList.add('dg-labeled'); } catch (_) {}</script>
+<style id="dg-no-pilot-ops">#btnPilotOps, #pilotOpsDrawer, #pilotOpsModal, #pilotOpsSection, [data-pilot-ops], .pilot-ops-drawer, .pilot-ops-btn { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; }</style>
+</head>
+<body data-test="04" data-test-title="Required document upload" data-test-watch="DeskGate names the empty upload box and the files to attach. It never attaches files itself.">
+  <header>
+    <strong>HealthPayer Essentials · Prior Authorization</strong>
+    <div class="menu"><label>Profile photo <input type="file" id="avatar" accept="image/*"></label></div>
+    <span class="mono" style="font-size:12px;color:#cbd5e1;">Synthetic · document upload · Human Submit</span>
+  </header>
+  <div class="wrap">
+    <div class="trap-note mono">
+      TRAP: the payer wants the chart's PDFs uploaded, not just named. The upload box is required. Like most
+      portals it uploads at once, clears the file box and lists the file underneath. DeskGate never attaches
+      files; it must say the box is empty and flag a Submit without it. Zero live PHI.
+    </div>
+    <div class="receipt" id="rcpt">
+      <div style="color:var(--success);font-weight:800;margin-bottom:6px;">Submission Received</div>
+      <div>Authorization Reference: <strong class="mono" id="rcpt_tid">—</strong></div>
+      <div style="font-size:12px;color:#166534;margin-top:6px;">Documents received: <span id="rcpt_docs">0</span></div>
+    </div>
+    <div class="box">
+      <form id="paForm" onsubmit="return false;">
+        <div class="grid">
+          <div class="cell"><label for="f_payer">Target Payer / Health Plan *</label><input id="f_payer" required></div>
+          <div class="cell"><label for="f_member">Member / Subscriber ID *</label><input id="f_member" class="mono" required></div>
+          <div class="cell"><label for="f_name">Patient Full Name *</label><input id="f_name" required></div>
+          <div class="cell"><label for="f_dob">Date of Birth *</label><input id="f_dob" placeholder="MM/DD/YYYY" required></div>
+          <div class="cell"><label for="f_cpt">Requested CPT / HCPCS Codes &amp; Units *</label><input id="f_cpt" class="mono" required></div>
+          <div class="cell"><label for="f_icd">Primary &amp; Secondary ICD-10 Codes *</label><input id="f_icd" class="mono" required></div>
+          <div class="cell full">
+            <label for="f_docs">Supporting Documents (PDF) *</label>
+            <div class="drop upload-zone">
+              <input type="file" id="f_docs" accept="application/pdf" multiple required>
+              <ul id="docList"></ul>
+            </div>
+          </div>
+        </div>
+        <div class="bar"><button type="button" class="btn" id="btnSubmit">Submit Authorization Request</button></div>
+      </form>
+    </div>
+  </div>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let uploaded = 0;
+    // Upload at once, then clear the box and list the file, the way most portals do.
+    $('f_docs').addEventListener('change', () => {
+      Array.from($('f_docs').files || []).forEach((f) => {
+        const li = document.createElement('li'); li.textContent = f.name + ' — uploaded'; $('docList').appendChild(li); uploaded += 1;
+      });
+      $('f_docs').value = '';
+    });
+    $('btnSubmit').onclick = () => {
+      $('rcpt_tid').textContent = 'BCBS-TN-PA-' + Math.floor(10000000 + Math.random() * 90000000);
+      $('rcpt_docs').textContent = String(uploaded);
+      $('rcpt').style.display = 'block';
+      window.scrollTo({ top: 0 });
+    };
+  </script>
+</body>
+</html>
