@@ -113,24 +113,34 @@ Nach dem Test wird die Installation entweder über Abschnitt 2 oder 3 fest einge
 
 **Im Schweiz-Modus:**
 
-- **READ CHART** liest den Seitentext des aktiven Tabs lokal im Browser. Es wird kein Bildschirmfoto erstellt. PDFs und Citrix-Bildschirme ohne Seitentext werden von Hand übernommen.
-- **STAGE** füllt Formularfelder anhand einer Wortliste im Browser aus. Für die Feldzuordnung gibt es keinen Serveraufruf.
-- **Die Stellungnahme** wird lokal aus wörtlichen Zitaten zusammengesetzt. Was in der Akte fehlt, wird als [FEHLT] markiert.
-- **Keine Fernsteuerung:** Alle Eingaben erzeugt die Erweiterung lokal aus dem Seitentext. Der Server sendet keine Befehle. Es wird kein Code nachgeladen (kein `eval`, keine WebSocket-Verbindung, keine externen Skripte).
-- **Kein Absenden:** WZW-Bestätigung und Einreichen bleiben bei der Fachperson. Die Erweiterung klickt nie auf Absenden.
-- **Falldaten nur im Arbeitsspeicher:** Falldaten liegen nur im Arbeitsspeicher des Seitenpanels und werden bei «NEUER FALL» oder beim Schliessen des Panels verworfen. Lokal gespeichert werden nur Einstellungen (Server-Adresse, Desk-Code, Desk-Key, Schalter).
+- **READ CHART** liest den Text der aktiven Seite (alle lesbaren Rahmen) und sendet ihn zur Auswertung an `deskgate.app`, Server bei Flow Swiss AG in der Schweiz. Es wird kein Bildschirmfoto erstellt; die Bildschirmlesung ist im Schweiz-Modus gesperrt.
+- **Praxissoftware ohne Browser-Ansicht (Client-Programm, Citrix):** Die Fachperson fügt den KG-Auszug im Seitenpanel unter «Paste or text PDF» ein (PARSE PASTE) oder wählt ein PDF mit Textebene (PARSE PDF). Beides geht denselben Weg wie der Seitentext. PDFs ohne Textebene (Scans) werden abgelehnt; eine Texterkennung gibt es nicht.
+- **Die Stellungnahme** erstellt der Server bei Flow Swiss aus den gelesenen Angaben, mit wörtlichen Zitaten aus der Krankengeschichte. Dafür wird kein KI-Modell verwendet. Was in der Akte fehlt, wird als [FEHLT] markiert.
+- **Feldzuordnung (STAGE):** Bei STAGE APPEAL liefert der Server mit dem Entwurf auch, welcher Text in welches Formularfeld gehört. Bei STAGE PORTAL (und bei STAGE APPEAL, wenn der Server keine Zuordnung liefert) schickt der Server die Feldbeschriftungen des Formulars und die Namen der gelesenen Angaben, zum Beispiel «Geburtsdatum», an Google Vertex AI (Gemini, Google-Cloud-Projekt `deskgate-production`). Werte aus Krankengeschichte oder Schreiben gehen dabei nicht mit. Ohne Antwort der Feldzuordnung bricht STAGE im Schweiz-Modus ab und tippt nichts.
+- **Kein nachgeladener Code:** Die Erweiterung führt keinen Code vom Server aus (kein `eval`, keine WebSocket-Verbindung, keine externen Skripte). Vom Server kommen nur Daten zurück: die gelesenen Angaben, der Entwurf und die Feldzuordnung. Die Erweiterung tippt diese Texte in Formularfelder und liest jedes Feld zurück.
+- **Kein Absenden:** WZW-Bestätigung und Einreichen bleiben bei der Fachperson. Die Erweiterung klickt nie auf Schaltflächen, setzt keine Häkchen (auch nicht bei den WZW-Kriterien) und fasst Upload-Felder nicht an.
+- **Falldaten nur im Arbeitsspeicher:** Im Browser liegen Falldaten nur im Arbeitsspeicher des Seitenpanels und werden bei «NEUER FALL» oder beim Schliessen des Panels verworfen. Lokal gespeichert werden nur Einstellungen (Server-Adresse, Desk-Code, Desk-Key, Schalter). Der Server verarbeitet Seitentext, eingefügten Text, PDFs und Falldaten im Arbeitsspeicher und speichert sie nicht.
 - **Zugelassene Seiten:** Mit dem Desk-Key legen wir fest, auf welchen Adressen die Erweiterung lesen und ausfüllen darf (Ihr KG-System, die Versicherer-Portale). Auf anderen Seiten verweigert sie.
 - **Das Seitenskript** zählt bei einem aktiven Fall, wie viele Zeichen die Fachperson in vorbereiteten Feldern ändert und wie viele Dateien sie anhängt. Es erfasst nur Anzahlen, nie Inhalte.
 
 **Was den Browser verlässt (nur an `deskgate.app`, Server bei Flow Swiss AG, Schweiz):**
 
+Jede Anfrage enthält den Desk-Key und den Hostnamen der aktiven Seite (ohne Pfad).
+
 | Was | Wann | Inhalt |
 | --- | --- | --- |
-| Lizenzprüfung | vor dem Lesen oder Ausfüllen auf einer Webseite | Desk-Key |
+| Lizenzprüfung | vor jedem Lesen oder Ausfüllen auf einer Webseite | Desk-Key, Hostname der aktiven Seite |
+| Seitentext | READ CHART | Text der aktiven Seite (alle lesbaren Rahmen), Adresse und Titel des Tabs |
+| Eingefügter Text | PARSE PASTE | der eingefügte Text |
+| PDF | PARSE PDF | die gewählte PDF-Datei (höchstens 8 MB) mit Dateiname; der Server liest die Textebene der ersten 30 Seiten |
+| Falldaten für den Entwurf | STAGE APPEAL | die gelesenen Angaben aus KG und Schreiben (z. B. Name, Geburtsdatum, AHV-Nr., Versicherten-Nr., Diagnosen, wörtliche KG-Zeilen, Dokumentnamen) sowie Beschriftungen und Inhalte der Formularfelder auf der Portalseite |
+| Feldzuordnung | STAGE PORTAL | Beschriftungen, Typ und Auswahllisten der Formularfelder und die Namen der gelesenen Angaben, ohne Werte. Der Server gibt sie an Google Vertex AI weiter. |
 | Zählzeile | nach dem Einreichen durch die Fachperson | Desk-Code, Hostname des Portals, zufällige Fall-ID, Version, Ja/Nein-Angaben (vorbereitet, geändert, eingereicht), Minuten, Zähler, SHA-256-Prüfwert der Referenznummer des Versicherers (nicht die Nummer selbst) |
-| Server-Protokolle | bei jeder Verbindung | IP-Adresse, Zeitpunkt |
+| Server-Protokolle | bei jeder Verbindung | IP-Adresse, Zeitpunkt; bei Anfragen mit Desk-Key zusätzlich Organisation, Desk und Hostname der aktiven Seite |
 
-Namen, AHV-Nummern, Diagnosen und KG-Texte werden nicht übermittelt.
+**Was gespeichert wird:** Auf dem Server nur die Zählzeile und die Server-Protokolle. Seitentext, eingefügter Text, PDFs, Falldaten und Entwurf werden nur für die Dauer der Anfrage im Arbeitsspeicher verarbeitet.
+
+**Was an Google geht:** Nur die Angaben für die Feldzuordnung (Feldbeschriftungen und Namen der Angaben). Namen, AHV-Nummern, Diagnosen und KG-Texte gehen nicht an Google. Welche Google-Cloud-Region verwendet wird, legt die Serverkonfiguration fest; fest an die Region Zürich (europe-west6) gebunden ist dieser Schritt derzeit nicht.
 
 **Berechtigungen im Manifest:**
 
